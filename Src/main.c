@@ -50,6 +50,7 @@
 
 /* USER CODE BEGIN PV */
 extern USBD_HandleTypeDef hUsbDeviceFS;
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -191,6 +192,11 @@ void USB_DEVICE_Init(void)
 	  {
 	    Error_Handler();
 	  }
+
+	  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS,    64);
+	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 16);
+	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 232);
+
 	  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_VIDEO) != USBD_OK)
 	  {
 	    Error_Handler();
