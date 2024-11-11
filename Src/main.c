@@ -18,9 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 #include "libjpeg.h"
 #include "memorymap.h"
 #include "rtc.h"
+#include "sdmmc.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -28,6 +30,8 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_video_if.h"
+#include "ff.h"
+#include "sample_picture.h"
 
 /* USER CODE END Includes */
 
@@ -51,6 +55,7 @@
 /* USER CODE BEGIN PV */
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+uint8_t nv12_picture[UVC_MAX_FRAME_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,6 +81,11 @@ int main(void)
 
   /* USER CODE END 1 */
 
+  /* Enable the CPU Cache */
+
+  /* Enable I-Cache---------------------------------------------------------*/
+  SCB_EnableICache();
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -96,8 +106,33 @@ int main(void)
   MX_GPIO_Init();
   MX_RTC_Init();
   MX_LIBJPEG_Init();
+  MX_SDMMC1_SD_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   USB_DEVICE_Init();
+
+  FATFS FatFs;
+  boolean success = FALSE;
+  if (f_mount(&FatFs, u"", 1) == FR_OK)
+  {
+	  // Read binary file to RAM
+	  FIL file;
+	  if (f_open(&file, u"sample_picture.yuv", FA_READ) == FR_OK)
+	  {
+		  UINT bytesRead = sizeof(nv12_picture);
+		  f_read(&file, nv12_picture, bytesRead, &bytesRead);
+		  success = bytesRead == sizeof(nv12_picture);
+		  f_close(&file);
+	  }
+
+	  f_mount(NULL, NULL, 1);
+  }
+
+  if (!success)
+  {
+	  // Fallback - show one color picture
+	  memset(nv12_picture, 0xAA, sizeof(nv12_picture));
+  }
 
   /* USER CODE END 2 */
 

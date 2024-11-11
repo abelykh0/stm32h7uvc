@@ -35,7 +35,7 @@
 #include "stm32h7xx_hal.h"
 
 /* USER CODE BEGIN INCLUDE */
- /* USER CODE END INCLUDE */
+/* USER CODE END INCLUDE */
 
 /** @addtogroup USBD_OTG_DRIVER
   * @brief Driver for Usb device.

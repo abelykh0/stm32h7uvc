@@ -53,6 +53,7 @@
 #include "usbd_ctlreq.h"
 #include "usbd_core.h"
 #include "stm32h7xx_hal.h"
+#include "sample_picture.h"
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
@@ -641,16 +642,13 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
 static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
 	  USBD_VIDEO_HandleTypeDef *hVIDEO = (USBD_VIDEO_HandleTypeDef *)pdev->pClassData;
-//#include "test_pic1.h"
 	  static uint16_t packets_cnt = 0xffff;
 	  static uint8_t header[2] = {2,0};//length + data
-	  // uint8_t* data_pointer;
 	  uint8_t packet[UVC_ISO_FS_MPS];
 	  uint16_t i;
 	  static uint32_t picture_pos;
 
 	  USBD_LL_FlushEP(pdev, UVC_IN_EP);//very important
-	  //DCD_EP_Flush(pdev,USB_ENDPOINT_IN(1));//very important
 
 	  packets_cnt++;
 	  if (packets_cnt>(PACKETS_IN_FRAME-1))
@@ -672,8 +670,7 @@ static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
 	    }
 	    else
 	    {
-	    	packet[i] = 0xAA;
-	      //packet[i] = nv12_picture[picture_pos];
+	      packet[i] = nv12_picture[picture_pos];
 	    }
 	    picture_pos++;
 	  }
@@ -681,7 +678,6 @@ static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
 	  USBD_StatusTypeDef result;
 	  if (hVIDEO->uvc_state == UVC_PLAY_STATUS_STREAMING)
 	  {
-		  ///DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
 		  result = USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
 		                           (uint8_t *)&packet, (uint32_t)UVC_ISO_FS_MPS);
 
