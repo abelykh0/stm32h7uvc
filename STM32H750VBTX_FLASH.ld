@@ -165,6 +165,12 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM_D1
+  
+  .sram2 :
+  {
+    . = ALIGN(4);
+    *(.sram2)           /* .sram2 sections (variables) */
+  } >RAM_D2
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

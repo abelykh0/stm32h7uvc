@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * File Name          : libjpeg.h
-  * Description        : This file provides code for the configuration
-  *                      of the libjpeg instances.
+  * @file    jpeg.h
+  * @brief   This file contains all the function prototypes for
+  *          the jpeg.c file
   ******************************************************************************
   * @attention
   *
@@ -18,39 +18,35 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __libjpeg_H
-#define __libjpeg_H
+#ifndef __JPEG_H__
+#define __JPEG_H__
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "jpeglib.h"
+#include "main.h"
 
-/* USER CODE BEGIN 0 */
-/* USER CODE END 0 */
+/* USER CODE BEGIN Includes */
 
-/* Global variables ---------------------------------------------------------*/
+/* USER CODE END Includes */
 
-/* USER CODE BEGIN 1 */
-/* USER CODE END 1 */
+extern JPEG_HandleTypeDef hjpeg;
 
-/* LIBJPEG init function */
-void MX_LIBJPEG_Init(void);
+/* USER CODE BEGIN Private defines */
 
-/* USER CODE BEGIN 2 */
-/* USER CODE END 2 */
+/* USER CODE END Private defines */
+
+void MX_JPEG_Init(void);
+
+/* USER CODE BEGIN Prototypes */
+
+/* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__libjpeg_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __JPEG_H__ */
 
