@@ -12,7 +12,7 @@ Screen::Screen()
 
 void Screen::Clear()
 {
-	//Clear();
+	::Clear(this->_attribute);
 }
 
 void Screen::SetFont(const uint8_t* font)

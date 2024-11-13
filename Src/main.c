@@ -20,6 +20,7 @@
 #include "main.h"
 #include "fatfs.h"
 #include "jpeg.h"
+#include "mdma.h"
 #include "memorymap.h"
 #include "rtc.h"
 #include "sdmmc.h"
@@ -101,11 +102,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_MDMA_Init();
   MX_RTC_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_JPEG_Init();
-
   /* USER CODE BEGIN 2 */
   USB_DEVICE_Init();
   setup();

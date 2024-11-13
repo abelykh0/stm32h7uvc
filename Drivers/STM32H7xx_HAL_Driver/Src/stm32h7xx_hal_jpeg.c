@@ -42,7 +42,7 @@
          and inversely more or less jpg file size.
 
      (#) Note that for decoding operation the JPEG peripheral output data are organized in
-         YCbCr blocks called MCU (Minimum Coded Unit) as defined in the JPEG specification
+         YCbCr blocks called MCU (Minimum Coded Unit) as defioned in the JPEG specification
          ISO/IEC 10918-1 standard.
          It is up to the application to transform these YCbCr blocks to RGB data that can be display.
 

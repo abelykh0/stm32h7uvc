@@ -58,8 +58,12 @@
 #include "jpeg.h"
 #include <stdbool.h>
 
-uint8_t jpg_picture[UVC_WIDTH * UVC_HEIGHT * 2];
-uint32_t jpgLength;
+static uint8_t outbytes0[UVC_WIDTH * UVC_HEIGHT];
+static uint8_t outbytes1[UVC_WIDTH * UVC_HEIGHT];
+static uint8_t* write_pointer = outbytes0;
+static uint8_t* read_pointer = outbytes0;
+static uint32_t jpgLength = 0;
+static bool jpeg_encode_done = true;
 
 /* VIDEO Device library callbacks */
 static uint8_t USBD_VIDEO_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
@@ -358,6 +362,21 @@ static USBD_VideoControlTypeDef video_Probe_Control =
   .bMaxVersion = 0x00U,
 };
 
+void switch_buffers(void)
+{
+	if (write_pointer == outbytes0)
+	{
+		write_pointer = outbytes1;
+		read_pointer = outbytes0;
+	}
+	else
+	{
+		write_pointer = outbytes0;
+		read_pointer = outbytes1;
+	}
+}
+
+
 /**
   * @}
   */
@@ -611,7 +630,13 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
 	jpgLength = OutDataLength;
+	jpeg_encode_done = true;
 }
+
+//void HAL_JPEG_EncodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
+//{
+//	jpeg_encode_done = true;
+//}
 
 /**
   * @brief  USBD_VIDEO_DataIn
@@ -620,91 +645,79 @@ void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, ui
   * @param  epnum: endpoint index
   * @retval status
   */
-static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
-{
-	  USBD_VIDEO_HandleTypeDef *hVIDEO = (USBD_VIDEO_HandleTypeDef *)pdev->pClassData;
+static uint8_t USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
+	USBD_VIDEO_HandleTypeDef* hVIDEO = (USBD_VIDEO_HandleTypeDef*)pdev->pClassData;
 
-	  static uint16_t packets_cnt = 0xffff;
-	  static uint8_t header[2] = {2,0};//length + data
-	  static uint8_t packet[UVC_ISO_FS_MPS];
-	  uint16_t i;
-	  static uint32_t picture_pos;
+	static uint16_t packets_cnt = 0xffff;
+	static uint8_t header[2] = { 2, 0 }; //length + data
+	static uint32_t picture_pos;
+	static uint16_t packets_in_frame = 1;
+	static uint16_t last_packet_size = 0;
+	static uint8_t tx_enable_flag = 0;
 
-	  static uint16_t packets_in_frame = 1;
-	  static uint16_t last_packet_size = 0;
+	USBD_LL_FlushEP(pdev, UVC_IN_EP); //very important
 
-	  static uint8_t tx_enable_flag = 0;//разрешение передачи
-	  static bool jpeg_encode_done = false;
+	if (tx_enable_flag)
+	{
+		packets_cnt++;
+	}
 
-	  USBD_LL_FlushEP(pdev, UVC_IN_EP);//very important
+	if (tx_enable_flag == 0)
+	{
+		if (jpeg_encode_done)
+		{
+			tx_enable_flag = 1;
+			switch_buffers();
 
-	  if (tx_enable_flag) { packets_cnt++; }
+			// start of new frame
+			packets_cnt = 0;
+			header[1] ^= 1; // toggle bit0 every new frame
+			picture_pos = 0;
 
-	  if (tx_enable_flag == 0)//если передача закончилась
-	  {
-		  // Convert to JPEG
-	      //if (!jpeg_encode_done)
-	      //{
-	    	  HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas), jpg_picture, sizeof(jpg_picture), HAL_MAX_DELAY);
-	    	  jpeg_encode_done = true;
-	      //}
+			packets_in_frame = (jpgLength / ((uint16_t)PACKET_SIZE_NO_HEADER)) + 1;
+			last_packet_size = (jpgLength - ((packets_in_frame - 1) * ((uint16_t)PACKET_SIZE_NO_HEADER)) + 2);
 
-		  if (jpeg_encode_done)//если кодирование закончилось
-	    {
-	      tx_enable_flag = 1;
-	      //switch_buffers();//переключить буферы для двойной буферизации
-	      //jpeg_encode_enabled = 1;//начать новое кодирование
+			// start encoding using DMA, when done HAL_JPEG_DataReadyCallback is called
+			jpeg_encode_done = false;
+			HAL_JPEG_Encode_DMA(&hjpeg, canvas, sizeof(canvas),
+					write_pointer + sizeof(header),
+					sizeof(outbytes0) - sizeof(header));
+		}
+	}
 
-	      //start of new frame
-	      packets_cnt = 0;
-	      header[1]^= 1;//toggle bit0 every new frame
-	      picture_pos = 0;
+	if (hVIDEO->uvc_state == UVC_PLAY_STATUS_STREAMING)
+	{
+		read_pointer[picture_pos + 0] = header[0];
+		read_pointer[picture_pos + 1] = header[1];
 
-	      packets_in_frame = (jpgLength / ((uint16_t)PACKET_SIZE_NO_HEADER)) + 1;                            //-2 - без учета заголовка
-	      last_packet_size = (jpgLength - ((packets_in_frame - 1) * ((uint16_t)PACKET_SIZE_NO_HEADER)) + 2); //+2 - учитывая заголовок
-	    }
-	  }
-
-	  packet[0] = header[0];
-	  packet[1] = header[1];
-
-	  for (i=2;i<UVC_ISO_FS_MPS;i++)
-	  {
-	    packet[i] = jpg_picture[picture_pos];
-	    picture_pos++;
-	  }
-
-	  if (hVIDEO->uvc_state == UVC_PLAY_STATUS_STREAMING)
-	  {
-	    if (packets_cnt < (packets_in_frame - 1))
-	    {
+		if (packets_cnt < (packets_in_frame - 1))
+		{
+			USBD_LL_Transmit(pdev, (uint8_t) (epnum | UVC_REQ_READ_MASK),
+					(uint8_t*)&read_pointer[picture_pos],
+					(uint32_t)UVC_ISO_FS_MPS);
+			picture_pos += PACKET_SIZE_NO_HEADER;
+		}
+		else if (tx_enable_flag == 1)
+		{
+			USBD_LL_Transmit(pdev, (uint8_t) (epnum | UVC_REQ_READ_MASK),
+					(uint8_t*)&read_pointer[picture_pos],
+					(uint32_t)last_packet_size);
+			tx_enable_flag = 0;
+			picture_pos = 0;
+		}
+		else
+		{
+			// never called ?
 			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
-								   (uint8_t *)&packet, (uint32_t)UVC_ISO_FS_MPS);
-	      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
-	    }
-	    else if (tx_enable_flag == 1)//только если передача разрешена
-	    {
-			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
-								   (uint8_t *)&packet, (uint32_t)last_packet_size);
-	      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
-	      tx_enable_flag = 0;//больше нельзя передавать данные
-	      picture_pos = 0;
-	    }
-	    else
-	    {
-	    	// never called
-			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
-								   (uint8_t *)&header, 2);//header
-	      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header
-	      picture_pos = 0;//protection from overflow
-	    }
-	  }
-	  else
-	  {
-	    packets_cnt = 0xffff;
-	  }
+					(uint8_t*)header, 2);
+			picture_pos = 0; //protection from overflow
+		}
+	} else
+	{
+		packets_cnt = 0xffff;
+	}
 
-	  return USBD_OK;
+	return USBD_OK;
 }
 
 /**
