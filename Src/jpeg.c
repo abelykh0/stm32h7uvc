@@ -74,7 +74,7 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
     hmdma_jpeg_outfifo_th.Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
     hmdma_jpeg_outfifo_th.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
     hmdma_jpeg_outfifo_th.Init.BufferTransferLength = 32;
-    hmdma_jpeg_outfifo_th.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
+    hmdma_jpeg_outfifo_th.Init.SourceBurst = MDMA_SOURCE_BURST_32BEATS;
     hmdma_jpeg_outfifo_th.Init.DestBurst = MDMA_DEST_BURST_32BEATS;
     hmdma_jpeg_outfifo_th.Init.SourceBlockAddressOffset = 0;
     hmdma_jpeg_outfifo_th.Init.DestBlockAddressOffset = 0;
@@ -102,8 +102,8 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
     hmdma_jpeg_infifo_th.Init.DestDataSize = MDMA_DEST_DATASIZE_WORD;
     hmdma_jpeg_infifo_th.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
     hmdma_jpeg_infifo_th.Init.BufferTransferLength = 32;
-    hmdma_jpeg_infifo_th.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
-    hmdma_jpeg_infifo_th.Init.DestBurst = MDMA_DEST_BURST_32BEATS;
+    hmdma_jpeg_infifo_th.Init.SourceBurst = MDMA_SOURCE_BURST_32BEATS;
+    hmdma_jpeg_infifo_th.Init.DestBurst = MDMA_DEST_BURST_16BEATS;
     hmdma_jpeg_infifo_th.Init.SourceBlockAddressOffset = 0;
     hmdma_jpeg_infifo_th.Init.DestBlockAddressOffset = 0;
     if (HAL_MDMA_Init(&hmdma_jpeg_infifo_th) != HAL_OK)

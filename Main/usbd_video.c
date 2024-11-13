@@ -630,13 +630,12 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
 	jpgLength = OutDataLength;
-	jpeg_encode_done = true;
 }
 
-//void HAL_JPEG_EncodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
-//{
-//	jpeg_encode_done = true;
-//}
+void HAL_JPEG_EncodeCpltCallback(JPEG_HandleTypeDef *hjpeg)
+{
+	jpeg_encode_done = true;
+}
 
 /**
   * @brief  USBD_VIDEO_DataIn
@@ -662,27 +661,31 @@ static uint8_t USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 		packets_cnt++;
 	}
 
-	if (tx_enable_flag == 0)
+	if (tx_enable_flag == 0 && jpeg_encode_done)
 	{
-		if (jpeg_encode_done)
-		{
-			tx_enable_flag = 1;
-			switch_buffers();
+		jpeg_encode_done = false;
+		switch_buffers();
 
-			// start of new frame
-			packets_cnt = 0;
-			header[1] ^= 1; // toggle bit0 every new frame
-			picture_pos = 0;
+		// start of new frame
+		packets_cnt = 0;
+		header[1] ^= 1; // toggle bit0 every new frame
+		picture_pos = 0;
 
-			packets_in_frame = (jpgLength / ((uint16_t)PACKET_SIZE_NO_HEADER)) + 1;
-			last_packet_size = (jpgLength - ((packets_in_frame - 1) * ((uint16_t)PACKET_SIZE_NO_HEADER)) + 2);
+		packets_in_frame = (jpgLength / ((uint16_t)PACKET_SIZE_NO_HEADER)) + 1;
+		last_packet_size = (jpgLength - ((packets_in_frame - 1) * ((uint16_t)PACKET_SIZE_NO_HEADER)) + 2);
 
-			// start encoding using DMA, when done HAL_JPEG_DataReadyCallback is called
-			jpeg_encode_done = false;
-			HAL_JPEG_Encode_DMA(&hjpeg, canvas, sizeof(canvas),
-					write_pointer + sizeof(header),
-					sizeof(outbytes0) - sizeof(header));
-		}
+		// start encoding using DMA, when done HAL_JPEG_DataReadyCallback is called
+		/*
+		SCB_InvalidateICache();
+		HAL_JPEG_Encode_DMA(&hjpeg, canvas, sizeof(canvas),
+				write_pointer + sizeof(header),
+				sizeof(outbytes0) - sizeof(header));
+		*/
+		HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas),
+				write_pointer + sizeof(header),
+				sizeof(outbytes0) - sizeof(header), HAL_MAX_DELAY);
+
+		tx_enable_flag = 1;
 	}
 
 	if (hVIDEO->uvc_state == UVC_PLAY_STATUS_STREAMING)
@@ -707,7 +710,7 @@ static uint8_t USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 		}
 		else
 		{
-			// never called ?
+			// Only while very first frame is still encoding
 			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
 					(uint8_t*)header, 2);
 			picture_pos = 0; //protection from overflow
