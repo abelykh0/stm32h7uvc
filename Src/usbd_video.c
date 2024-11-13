@@ -54,37 +54,12 @@
 #include "usbd_core.h"
 #include "stm32h7xx_hal.h"
 #include "sample_picture.h"
+#include "canvas.h"
+#include "jpeg.h"
+#include <stdbool.h>
 
-/** @addtogroup STM32_USB_DEVICE_LIBRARY
-  * @{
-  */
-
-
-/** @defgroup USBD_VIDEO
-  * @brief USB Device Video Class core module
-  * @{
-  */
-
-/** @defgroup USBD_VIDEO_Private_TypesDefinitions
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @defgroup USBD_VIDEO_Private_Defines
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-
-/** @defgroup USBD_VIDEO_Private_Macros
-  * @{
-  */
+uint8_t jpg_picture[UVC_WIDTH * UVC_HEIGHT * 2];
+uint32_t jpgLength;
 
 /* VIDEO Device library callbacks */
 static uint8_t USBD_VIDEO_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
@@ -632,6 +607,12 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
   return ret;
 }
 
+
+void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
+{
+	jpgLength = OutDataLength;
+}
+
 /**
   * @brief  USBD_VIDEO_DataIn
   *         handle data IN Stage
@@ -642,21 +623,46 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
 static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
 {
 	  USBD_VIDEO_HandleTypeDef *hVIDEO = (USBD_VIDEO_HandleTypeDef *)pdev->pClassData;
+
 	  static uint16_t packets_cnt = 0xffff;
 	  static uint8_t header[2] = {2,0};//length + data
-	  uint8_t packet[UVC_ISO_FS_MPS];
+	  static uint8_t packet[UVC_ISO_FS_MPS];
 	  uint16_t i;
 	  static uint32_t picture_pos;
 
+	  static uint16_t packets_in_frame = 1;
+	  static uint16_t last_packet_size = 0;
+
+	  static uint8_t tx_enable_flag = 0;//разрешение передачи
+	  static bool jpeg_encode_done = false;
+
 	  USBD_LL_FlushEP(pdev, UVC_IN_EP);//very important
 
-	  packets_cnt++;
-	  if (packets_cnt>(PACKETS_IN_FRAME-1))
+	  if (tx_enable_flag) { packets_cnt++; }
+
+	  if (tx_enable_flag == 0)//если передача закончилась
 	  {
-	    //start of new frame
-	    packets_cnt = 0;
-	    header[1]^= 1;//toggle bit0 every new frame
-	    picture_pos = 0;
+		  // Convert to JPEG
+	      if (!jpeg_encode_done)
+	      {
+	    	  HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas), jpg_picture, sizeof(jpg_picture), HAL_MAX_DELAY);
+	    	  jpeg_encode_done = true;
+	      }
+
+		  if (jpeg_encode_done)//если кодирование закончилось
+	    {
+	      tx_enable_flag = 1;
+	      //switch_buffers();//переключить буферы для двойной буферизации
+	      //jpeg_encode_enabled = 1;//начать новое кодирование
+
+	      //start of new frame
+	      packets_cnt = 0;
+	      header[1]^= 1;//toggle bit0 every new frame
+	      picture_pos = 0;
+
+	      packets_in_frame = (jpgLength / ((uint16_t)PACKET_SIZE_NO_HEADER)) + 1;                            //-2 - без учета заголовка
+	      last_packet_size = (jpgLength - ((packets_in_frame - 1) * ((uint16_t)PACKET_SIZE_NO_HEADER)) + 2); //+2 - учитывая заголовок
+	    }
 	  }
 
 	  packet[0] = header[0];
@@ -664,108 +670,41 @@ static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
 
 	  for (i=2;i<UVC_ISO_FS_MPS;i++)
 	  {
-	    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET) //react to button
-	    {
-	      packet[i] = 0x33;
-	    }
-	    else
-	    {
-	      packet[i] = nv12_picture[picture_pos];
-	    }
+	    packet[i] = jpg_picture[picture_pos];
 	    picture_pos++;
 	  }
 
-	  USBD_StatusTypeDef result;
 	  if (hVIDEO->uvc_state == UVC_PLAY_STATUS_STREAMING)
 	  {
-		  result = USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
-		                           (uint8_t *)&packet, (uint32_t)UVC_ISO_FS_MPS);
-
+	    if (packets_cnt < (packets_in_frame - 1))
+	    {
+			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
+								   (uint8_t *)&packet, (uint32_t)UVC_ISO_FS_MPS);
+	      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)VIDEO_PACKET_SIZE);
+	    }
+	    else if (tx_enable_flag == 1)//только если передача разрешена
+	    {
+			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
+								   (uint8_t *)&packet, (uint32_t)last_packet_size);
+	      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&packet, (uint32_t)last_packet_size);
+	      tx_enable_flag = 0;//больше нельзя передавать данные
+	      picture_pos = 0;
+	    }
+	    else
+	    {
+	    	// never called
+			USBD_LL_Transmit(pdev, (uint8_t)(epnum | UVC_REQ_READ_MASK),
+								   (uint8_t *)&header, 2);//header
+	      //DCD_EP_Tx (pdev,USB_ENDPOINT_IN(1), (uint8_t*)&header, 2);//header
+	      picture_pos = 0;//protection from overflow
+	    }
 	  }
 	  else
 	  {
 	    packets_cnt = 0xffff;
 	  }
 
-	  //STM_EVAL_LEDToggle(LED6);
 	  return USBD_OK;
-
-/*
-  USBD_VIDEO_HandleTypeDef *hVIDEO = (USBD_VIDEO_HandleTypeDef *) pdev->pClassDataCmsit[pdev->classId];
-  static uint8_t  packet[UVC_PACKET_SIZE + (UVC_HEADER_PACKET_CNT * 2U)] = {0x00U};
-  static uint8_t *Pcktdata = packet;
-  static uint16_t PcktIdx = 0U;
-  static uint16_t PcktSze = UVC_PACKET_SIZE;
-  static uint8_t  payload_header[2] = {0x02U, 0x00U};
-  uint8_t i = 0U;
-  uint32_t RemainData = 0U;
-  uint32_t DataOffset = 0U;
-
-#ifdef USE_USBD_COMPOSITE
-  // Get the Endpoints addresses allocated for this class instance
-  VIDEOinEpAdd = USBD_CoreGetEPAdd(pdev, USBD_EP_IN, USBD_EP_TYPE_ISOC, (uint8_t)pdev->classId);
-#endif // USE_USBD_COMPOSITE
-
-  // Check if the Streaming has already been started
-  if (hVIDEO->uvc_state == UVC_PLAY_STATUS_STREAMING)
-  {
-    // Get the current packet buffer, index and size from the application layer
-    ((USBD_VIDEO_ItfTypeDef *)pdev->pUserData[pdev->classId])->Data(&Pcktdata, &PcktSze, &PcktIdx);
-
-    // Check if end of current image has been reached
-    if (PcktSze > 2U)
-    {
-      // Check if this is the first packet in current image
-      if (PcktIdx == 0U)
-      {
-        // Set the packet start index
-        payload_header[1] ^= 0x01U;
-      }
-
-      RemainData = PcktSze;
-
-      // fill the Transmit buffer
-      while (RemainData > 0U)
-      {
-        packet[((DataOffset + 0U) * i)] = payload_header[0];
-        packet[((DataOffset + 0U) * i) + 1U] = payload_header[1];
-
-        if (RemainData > pdev->ep_in[VIDEOinEpAdd & 0xFU].maxpacket)
-        {
-          DataOffset = pdev->ep_in[VIDEOinEpAdd & 0xFU].maxpacket;
-          (void)USBD_memcpy((packet + ((DataOffset + 0U) * i) + 2U),
-                            Pcktdata + ((DataOffset - 2U) * i), (DataOffset - 2U));
-
-          RemainData -= DataOffset;
-          i++;
-        }
-        else
-        {
-          (void)USBD_memcpy((packet + ((DataOffset + 0U) * i) + 2U),
-                            Pcktdata + ((DataOffset - 2U) * i), (RemainData - 2U));
-
-          RemainData = 0U;
-        }
-      }
-    }
-    else
-    {
-      // Add the packet header
-      packet[0] = payload_header[0];
-      packet[1] = payload_header[1];
-    }
-
-    hVIDEO->uvc_buffer = (uint8_t *)&packet;
-    hVIDEO->uvc_size = (uint32_t)PcktSze;
-
-    // Transmit the packet on Endpoint
-    (void)USBD_LL_Transmit(pdev, (uint8_t)(epnum | 0x80U),
-                           hVIDEO->uvc_buffer, hVIDEO->uvc_size);
-  }
-
-  // Exit with no error code
-  return (uint8_t) USBD_OK;
-*/
 }
 
 /**

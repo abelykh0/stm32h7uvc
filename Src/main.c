@@ -33,7 +33,7 @@
 #include "ff.h"
 #include "sample_picture.h"
 #include <stdbool.h>
-#include "jpeg_utils.h"
+#include "canvas.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,10 +57,6 @@
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 uint8_t nv12_picture[UVC_MAX_FRAME_SIZE];
-uint8_t bin_picture[UVC_WIDTH * UVC_HEIGHT * 3] __attribute__(( section(".sram2") ));
-uint8_t jpg_picture[UVC_WIDTH * UVC_HEIGHT * 3];
-//uint8_t jpg_picture[101610];
-uint32_t jpgLength;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,12 +112,34 @@ int main(void)
   /* USER CODE BEGIN 2 */
   USB_DEVICE_Init();
 
+  JPEG_ConfTypeDef config;
+  config.ImageWidth = UVC_WIDTH;
+  config.ImageHeight = UVC_HEIGHT;
+  config.ColorSpace = JPEG_YCBCR_COLORSPACE;
+  config.ChromaSubsampling = JPEG_444_SUBSAMPLING;
+  config.ImageQuality = 90;
+  HAL_JPEG_ConfigEncoding(&hjpeg, &config);
+
+  // test picture
+  Clear();
+  Set8x8Pixels(0, 0, 235);
+  Set8x8Pixels(1, 1, 235);
+  Set8x8Pixels(2, 2, 235);
+  Set8x8Pixels(3, 3, 235);
+  Set8x8Pixels(4, 4, 235);
+  Set8x8Pixels(5, 5, 235);
+  Set8x8Pixels(6, 6, 235);
+  Set8x8Pixels(7, 7, 235);
+  Set8x8Pixels(8, 8, 235);
+  Set8x8Pixels(39, 29, 235);
+
+/*
   FATFS FatFs;
-  bool success = false;
   if (f_mount(&FatFs, u"", 1) == FR_OK)
   {
 	  // Read binary file to RAM
 	  FIL file;
+	  bool success = false;
 #ifdef USBD_UVC_FORMAT_UNCOMPRESSED
 	  if (f_open(&file, u"sample_picture.nv12", FA_READ) == FR_OK)
 	  {
@@ -137,70 +155,16 @@ int main(void)
 		  memset(nv12_picture, 0xAA, sizeof(nv12_picture));
 	  }
 #else
-	  if (f_open(&file, u"sample_picture.brg", FA_READ) == FR_OK)
-	  {
-		  UINT bytesRead = sizeof(bin_picture);
-		  f_read(&file, bin_picture, bytesRead, &bytesRead);
-		  success = bytesRead == sizeof(bin_picture);
-		  f_close(&file);
-	  }
-
-	  JPEG_RGBToYCbCr_Convert_Function pRGBToYCbCr_Convert_Function;
-	  JPEG_ConfTypeDef config;
-	  config.ImageWidth = UVC_WIDTH;
-	  config.ImageHeight = UVC_HEIGHT;
-	  config.ColorSpace = JPEG_YCBCR_COLORSPACE;
-	  config.ChromaSubsampling = JPEG_422_SUBSAMPLING;
-	  config.ImageQuality = 100;
-	  uint32_t MCU_TotalNb;
-	  JPEG_GetEncodeColorConvertFunc(&config, &pRGBToYCbCr_Convert_Function, &MCU_TotalNb);
-	  HAL_JPEG_ConfigEncoding(&hjpeg, &config);
-	  uint32_t a;
-	  //pRGBToYCbCr_Convert_Function(bin_picture, jpg_picture, 0, sizeof(jpg_picture), &a);
-
-	  uint32_t RGB_InputImageIndex;
-	  uint32_t RGB_InputImageSize_Bytes;
-	  //uint32_t RGB_InputImageAddress;
-	  RGB_InputImageIndex = 0;
-	  uint32_t MCU_BlockIndex = 0;
-	  //RGB_InputImageAddress = bin_picture;
-	  RGB_InputImageSize_Bytes = sizeof(bin_picture);
-	  uint32_t DataBufferSize =  320 * 16 * 3;
-	  while(RGB_InputImageIndex < RGB_InputImageSize_Bytes)
-	  {
-	    /* Pre-Processing */
-	    MCU_BlockIndex += pRGBToYCbCr_Convert_Function(bin_picture + RGB_InputImageIndex,
-	    		jpg_picture + RGB_InputImageIndex, 0, DataBufferSize, &a);
-	    //Jpeg_IN_BufferTab.State = JPEG_BUFFER_FULL;
-
-	    RGB_InputImageIndex += DataBufferSize;
-	  }
-
-	  if (f_open(&file, u"sample_picture.bin", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-	  {
-		  UINT bytesWritten = sizeof(jpg_picture);
-		  f_write(&file, jpg_picture, bytesWritten, &bytesWritten);
-		  success = bytesWritten == jpgLength;
-		  f_close(&file);
-	  }
-
-	  if (!success)
-	  {
-		  // Fallback - show one color picture
-		  memset(bin_picture, 0xAA, sizeof(bin_picture));
-	  }
 
 	  // Convert to JPEG
-	  //JPEG_ConfTypeDef config;
+	  JPEG_ConfTypeDef config;
 	  config.ImageWidth = UVC_WIDTH;
 	  config.ImageHeight = UVC_HEIGHT;
 	  config.ColorSpace = JPEG_YCBCR_COLORSPACE;
 	  config.ChromaSubsampling = JPEG_422_SUBSAMPLING;
 	  config.ImageQuality = 90;
 	  HAL_JPEG_ConfigEncoding(&hjpeg, &config);
-	  //HAL_JPEG_EnableHeaderParsing(&hjpeg);
-	  //HAL_JPEG_Decode(&hjpeg, jpg_picture, sizeof(jpg_picture), bin_picture, sizeof(bin_picture), HAL_MAX_DELAY);
-	  HAL_JPEG_Encode(&hjpeg, bin_picture, sizeof(bin_picture), jpg_picture, sizeof(jpg_picture), HAL_MAX_DELAY);
+	  HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas), jpg_picture, sizeof(jpg_picture), HAL_MAX_DELAY);
 
 	  if (f_open(&file, u"sample_picture.jpg", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
 	  {
@@ -214,6 +178,7 @@ int main(void)
 	  // unmount SD card
 	  f_mount(NULL, NULL, 1);
   }
+*/
 
   /* USER CODE END 2 */
 
@@ -327,10 +292,6 @@ void USB_DEVICE_Init(void)
 	  }
 }
 
-void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
-{
-	jpgLength = OutDataLength;
-}
 /* USER CODE END 4 */
 
 /**
