@@ -28,7 +28,7 @@ protected:
     bool _isCursorVisible;
 
     uint8_t* _font = (uint8_t*)font8x8;
-    uint16_t _attribute = 0x3F10; // white on blue
+    uint16_t _attribute = 0x3F01; // white on blue
 
 public:
 	Screen();

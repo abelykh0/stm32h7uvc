@@ -25,11 +25,12 @@ extern "C" void setup()
 
 	Clear(0b00000001); // 00RRGGBB
 	screen.SetCursorPosition(0, 0);
-	//screen.PrintAlignCenter(3, "Hello world!");
+	screen.PrintAlignCenter(14, "Hello, world!");
 }
 
 extern "C" void loop()
 {
 	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
 	HAL_Delay(1000);
+	screen.PrintAlignCenter(15, "Hello, world!");
 }

@@ -643,11 +643,11 @@ static uint8_t  USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum)
 	  if (tx_enable_flag == 0)//если передача закончилась
 	  {
 		  // Convert to JPEG
-	      if (!jpeg_encode_done)
-	      {
+	      //if (!jpeg_encode_done)
+	      //{
 	    	  HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas), jpg_picture, sizeof(jpg_picture), HAL_MAX_DELAY);
 	    	  jpeg_encode_done = true;
-	      }
+	      //}
 
 		  if (jpeg_encode_done)//если кодирование закончилось
 	    {
