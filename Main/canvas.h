@@ -1,6 +1,10 @@
 #ifndef __MCU_H__
 #define __MCU_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "stdint.h"
 #include "usbd_video_conf.h"
 
@@ -25,10 +29,17 @@ typedef struct
 
 #define MCU_WIDTH (UVC_WIDTH / 8)
 #define MCU_HEIGHT (UVC_HEIGHT / 8)
+#define TEXT_COLUMNS (UVC_WIDTH / 8)
+#define TEXT_ROWS (UVC_HEIGHT / 8)
 
 extern uint8_t canvas[MCU_WIDTH * MCU_HEIGHT * sizeof(Mcu)];
 
-void Clear();
+void Clear(uint8_t color);
 void Set8x8Pixels(int x, int y, uint8_t color);
+void SetPixel(int x, int y, uint8_t color);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

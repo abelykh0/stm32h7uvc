@@ -30,10 +30,7 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_video_if.h"
-#include "ff.h"
-#include "sample_picture.h"
-#include <stdbool.h>
-#include "canvas.h"
+#include "startup.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,9 +51,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern USBD_HandleTypeDef hUsbDeviceFS;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-uint8_t nv12_picture[UVC_MAX_FRAME_SIZE];
+extern USBD_HandleTypeDef hUsbDeviceFS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,7 +96,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  initialize();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -109,77 +105,10 @@ int main(void)
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_JPEG_Init();
+
   /* USER CODE BEGIN 2 */
   USB_DEVICE_Init();
-
-  JPEG_ConfTypeDef config;
-  config.ImageWidth = UVC_WIDTH;
-  config.ImageHeight = UVC_HEIGHT;
-  config.ColorSpace = JPEG_YCBCR_COLORSPACE;
-  config.ChromaSubsampling = JPEG_444_SUBSAMPLING;
-  config.ImageQuality = 90;
-  HAL_JPEG_ConfigEncoding(&hjpeg, &config);
-
-  // test picture
-  Clear();
-  Set8x8Pixels(0, 0, 235);
-  Set8x8Pixels(1, 1, 235);
-  Set8x8Pixels(2, 2, 235);
-  Set8x8Pixels(3, 3, 235);
-  Set8x8Pixels(4, 4, 235);
-  Set8x8Pixels(5, 5, 235);
-  Set8x8Pixels(6, 6, 235);
-  Set8x8Pixels(7, 7, 235);
-  Set8x8Pixels(8, 8, 235);
-  Set8x8Pixels(39, 29, 235);
-
-/*
-  FATFS FatFs;
-  if (f_mount(&FatFs, u"", 1) == FR_OK)
-  {
-	  // Read binary file to RAM
-	  FIL file;
-	  bool success = false;
-#ifdef USBD_UVC_FORMAT_UNCOMPRESSED
-	  if (f_open(&file, u"sample_picture.nv12", FA_READ) == FR_OK)
-	  {
-		  UINT bytesRead = sizeof(nv12_picture);
-		  f_read(&file, nv12_picture, bytesRead, &bytesRead);
-		  success = bytesRead == sizeof(nv12_picture);
-		  f_close(&file);
-	  }
-
-	  if (!success)
-	  {
-		  // Fallback - show one color picture
-		  memset(nv12_picture, 0xAA, sizeof(nv12_picture));
-	  }
-#else
-
-	  // Convert to JPEG
-	  JPEG_ConfTypeDef config;
-	  config.ImageWidth = UVC_WIDTH;
-	  config.ImageHeight = UVC_HEIGHT;
-	  config.ColorSpace = JPEG_YCBCR_COLORSPACE;
-	  config.ChromaSubsampling = JPEG_422_SUBSAMPLING;
-	  config.ImageQuality = 90;
-	  HAL_JPEG_ConfigEncoding(&hjpeg, &config);
-	  HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas), jpg_picture, sizeof(jpg_picture), HAL_MAX_DELAY);
-
-	  if (f_open(&file, u"sample_picture.jpg", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-	  {
-		  UINT bytesWritten = jpgLength;
-		  f_write(&file, jpg_picture, bytesWritten, &bytesWritten);
-		  success = bytesWritten == jpgLength;
-		  f_close(&file);
-	  }
-#endif
-
-	  // unmount SD card
-	  f_mount(NULL, NULL, 1);
-  }
-*/
-
+  setup();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -189,8 +118,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
-	  HAL_Delay(1000);
+	loop();
   }
   /* USER CODE END 3 */
 }
