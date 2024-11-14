@@ -56,8 +56,8 @@
 
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
 extern MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
+extern MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
 extern JPEG_HandleTypeDef hjpeg;
 /* USER CODE BEGIN EV */
 
@@ -237,8 +237,8 @@ void MDMA_IRQHandler(void)
   /* USER CODE BEGIN MDMA_IRQn 0 */
 
   /* USER CODE END MDMA_IRQn 0 */
-  HAL_MDMA_IRQHandler(&hmdma_jpeg_outfifo_th);
   HAL_MDMA_IRQHandler(&hmdma_jpeg_infifo_th);
+  HAL_MDMA_IRQHandler(&hmdma_jpeg_outfifo_th);
   /* USER CODE BEGIN MDMA_IRQn 1 */
 
   /* USER CODE END MDMA_IRQn 1 */

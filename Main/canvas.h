@@ -32,7 +32,7 @@ typedef struct
 #define TEXT_COLUMNS (UVC_WIDTH / 8)
 #define TEXT_ROWS (UVC_HEIGHT / 8)
 
-extern uint8_t canvas[MCU_WIDTH * MCU_HEIGHT * sizeof(Mcu)];
+extern uint8_t canvas[MCU_WIDTH * MCU_HEIGHT * sizeof(Mcu)]; // 230,400
 
 void Clear(uint8_t color);
 void Set8x8Pixels(int x, int y, uint8_t color);

@@ -25,8 +25,8 @@
 /* USER CODE END 0 */
 
 JPEG_HandleTypeDef hjpeg;
-MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
 MDMA_HandleTypeDef hmdma_jpeg_infifo_th;
+MDMA_HandleTypeDef hmdma_jpeg_outfifo_th;
 
 /* JPEG init function */
 void MX_JPEG_Init(void)
@@ -62,39 +62,11 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
     __HAL_RCC_JPEG_CLK_ENABLE();
 
     /* JPEG MDMA Init */
-    /* JPEG_OUTFIFO_TH Init */
-    hmdma_jpeg_outfifo_th.Instance = MDMA_Channel0;
-    hmdma_jpeg_outfifo_th.Init.Request = MDMA_REQUEST_JPEG_OUTFIFO_TH;
-    hmdma_jpeg_outfifo_th.Init.TransferTriggerMode = MDMA_BUFFER_TRANSFER;
-    hmdma_jpeg_outfifo_th.Init.Priority = MDMA_PRIORITY_MEDIUM;
-    hmdma_jpeg_outfifo_th.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
-    hmdma_jpeg_outfifo_th.Init.SourceInc = MDMA_SRC_INC_DISABLE;
-    hmdma_jpeg_outfifo_th.Init.DestinationInc = MDMA_DEST_INC_BYTE;
-    hmdma_jpeg_outfifo_th.Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;
-    hmdma_jpeg_outfifo_th.Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
-    hmdma_jpeg_outfifo_th.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
-    hmdma_jpeg_outfifo_th.Init.BufferTransferLength = 32;
-    hmdma_jpeg_outfifo_th.Init.SourceBurst = MDMA_SOURCE_BURST_32BEATS;
-    hmdma_jpeg_outfifo_th.Init.DestBurst = MDMA_DEST_BURST_32BEATS;
-    hmdma_jpeg_outfifo_th.Init.SourceBlockAddressOffset = 0;
-    hmdma_jpeg_outfifo_th.Init.DestBlockAddressOffset = 0;
-    if (HAL_MDMA_Init(&hmdma_jpeg_outfifo_th) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    if (HAL_MDMA_ConfigPostRequestMask(&hmdma_jpeg_outfifo_th, 0, 0) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(jpegHandle,hdmaout,hmdma_jpeg_outfifo_th);
-
     /* JPEG_INFIFO_TH Init */
-    hmdma_jpeg_infifo_th.Instance = MDMA_Channel1;
+    hmdma_jpeg_infifo_th.Instance = MDMA_Channel0;
     hmdma_jpeg_infifo_th.Init.Request = MDMA_REQUEST_JPEG_INFIFO_TH;
     hmdma_jpeg_infifo_th.Init.TransferTriggerMode = MDMA_BUFFER_TRANSFER;
-    hmdma_jpeg_infifo_th.Init.Priority = MDMA_PRIORITY_MEDIUM;
+    hmdma_jpeg_infifo_th.Init.Priority = MDMA_PRIORITY_HIGH;
     hmdma_jpeg_infifo_th.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
     hmdma_jpeg_infifo_th.Init.SourceInc = MDMA_SRC_INC_BYTE;
     hmdma_jpeg_infifo_th.Init.DestinationInc = MDMA_DEST_INC_DISABLE;
@@ -118,6 +90,34 @@ void HAL_JPEG_MspInit(JPEG_HandleTypeDef* jpegHandle)
 
     __HAL_LINKDMA(jpegHandle,hdmain,hmdma_jpeg_infifo_th);
 
+    /* JPEG_OUTFIFO_TH Init */
+    hmdma_jpeg_outfifo_th.Instance = MDMA_Channel1;
+    hmdma_jpeg_outfifo_th.Init.Request = MDMA_REQUEST_JPEG_OUTFIFO_TH;
+    hmdma_jpeg_outfifo_th.Init.TransferTriggerMode = MDMA_BUFFER_TRANSFER;
+    hmdma_jpeg_outfifo_th.Init.Priority = MDMA_PRIORITY_VERY_HIGH;
+    hmdma_jpeg_outfifo_th.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
+    hmdma_jpeg_outfifo_th.Init.SourceInc = MDMA_SRC_INC_DISABLE;
+    hmdma_jpeg_outfifo_th.Init.DestinationInc = MDMA_DEST_INC_BYTE;
+    hmdma_jpeg_outfifo_th.Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;
+    hmdma_jpeg_outfifo_th.Init.DestDataSize = MDMA_DEST_DATASIZE_BYTE;
+    hmdma_jpeg_outfifo_th.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
+    hmdma_jpeg_outfifo_th.Init.BufferTransferLength = 32;
+    hmdma_jpeg_outfifo_th.Init.SourceBurst = MDMA_SOURCE_BURST_32BEATS;
+    hmdma_jpeg_outfifo_th.Init.DestBurst = MDMA_DEST_BURST_32BEATS;
+    hmdma_jpeg_outfifo_th.Init.SourceBlockAddressOffset = 0;
+    hmdma_jpeg_outfifo_th.Init.DestBlockAddressOffset = 0;
+    if (HAL_MDMA_Init(&hmdma_jpeg_outfifo_th) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    if (HAL_MDMA_ConfigPostRequestMask(&hmdma_jpeg_outfifo_th, 0, 0) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(jpegHandle,hdmaout,hmdma_jpeg_outfifo_th);
+
     /* JPEG interrupt Init */
     HAL_NVIC_SetPriority(JPEG_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(JPEG_IRQn);
@@ -139,8 +139,8 @@ void HAL_JPEG_MspDeInit(JPEG_HandleTypeDef* jpegHandle)
     __HAL_RCC_JPEG_CLK_DISABLE();
 
     /* JPEG MDMA DeInit */
-    HAL_MDMA_DeInit(jpegHandle->hdmaout);
     HAL_MDMA_DeInit(jpegHandle->hdmain);
+    HAL_MDMA_DeInit(jpegHandle->hdmaout);
 
     /* JPEG interrupt Deinit */
     HAL_NVIC_DisableIRQ(JPEG_IRQn);

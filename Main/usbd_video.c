@@ -58,6 +58,9 @@
 #include "jpeg.h"
 #include <stdbool.h>
 
+#define CHUNK_SIZE (sizeof(canvas) / 4)
+static uint8_t* mdmaInput;
+static uint8_t* mdmaOutput;
 static uint8_t outbytes0[UVC_WIDTH * UVC_HEIGHT];
 static uint8_t outbytes1[UVC_WIDTH * UVC_HEIGHT];
 static uint8_t* write_pointer = outbytes0;
@@ -626,6 +629,11 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
   return ret;
 }
 
+void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
+{
+    mdmaInput += NbDecodedData;
+    HAL_JPEG_ConfigInputBuffer(hjpeg, mdmaInput, CHUNK_SIZE);
+}
 
 void HAL_JPEG_DataReadyCallback(JPEG_HandleTypeDef *hjpeg, uint8_t *pDataOut, uint32_t OutDataLength)
 {
@@ -677,13 +685,17 @@ static uint8_t USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 		// start encoding using DMA, when done HAL_JPEG_DataReadyCallback is called
 		/*
 		SCB_InvalidateICache();
-		HAL_JPEG_Encode_DMA(&hjpeg, canvas, sizeof(canvas),
-				write_pointer + sizeof(header),
-				sizeof(outbytes0) - sizeof(header));
 		*/
+		mdmaInput = canvas;
+		mdmaOutput = write_pointer + sizeof(header);
+		HAL_JPEG_Encode_DMA(&hjpeg,
+				mdmaInput, CHUNK_SIZE,
+				mdmaOutput, sizeof(outbytes0) - sizeof(header));
+		/*
 		HAL_JPEG_Encode(&hjpeg, canvas, sizeof(canvas),
 				write_pointer + sizeof(header),
 				sizeof(outbytes0) - sizeof(header), HAL_MAX_DELAY);
+		*/
 
 		tx_enable_flag = 1;
 	}

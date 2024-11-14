@@ -1,7 +1,7 @@
 #include <canvas.h>
 #include "string.h"
 
-uint8_t canvas[] __attribute__(( section(".sram2") ));
+uint8_t canvas[] /*__attribute__(( section(".sram2") ))*/;
 static Mcu* canvasMcu = (Mcu*)canvas;
 
 // Y-Cb-Cr 64 color palette (indexed by RRGGBB)
