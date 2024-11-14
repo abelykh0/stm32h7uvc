@@ -2,6 +2,7 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_video_if.h"
+#include "rtc.h"
 #include "Screen.h"
 
 extern JPEG_HandleTypeDef hjpeg;
@@ -43,9 +44,6 @@ extern "C" void setup()
         screen.PrintAt(TEXT_COLUMNS - 1, i, "\x0BA"); // ║
     }
 
-	screen.SetAttribute(0x3F01);
-    screen.PrintAlignCenter(0, " Hello, world! ");
-
     // 64 colors
 	char buf[20];
     for (int i = 0; i < 64; i++)
@@ -57,11 +55,22 @@ extern "C" void setup()
     	sprintf(buf, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(i));
     	screen.PrintAt(3 + (i % 5) * 7, 2 + (i / 5) * 2, buf);
     }
+
+	screen.SetAttribute(0x3F01);
+    //screen.PrintAlignCenter(0, " Hello, world! ");
 }
 
 extern "C" void loop()
 {
+	char showTime[20];
+
 	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
 	HAL_Delay(1000);
-	screen.PrintAlignCenter(15, "Hello, world!");
+
+	RTC_DateTypeDef dateStruct;
+	RTC_TimeTypeDef timeStruct;
+	HAL_RTC_GetTime(&hrtc, &timeStruct, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &dateStruct, RTC_FORMAT_BIN); // important
+	sprintf(showTime, " %.2d:%.2d:%.2d ", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds);
+    screen.PrintAlignCenter(0, showTime);
 }
