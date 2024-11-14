@@ -6,3 +6,5 @@ This demo shows screen with 64 colors and a clock. This is how it looks like in 
 ![Screenshot](https://raw.githubusercontent.com/abelykh0/stm32h7uvc/refs/heads/main/doc/Camera.png)
 
 Software: [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html).
+
+Special thanks to [STM32F4_UVC_Camera Project](https://github.com/iliasam/STM32F4_UVC_Camera) for inspiration.
