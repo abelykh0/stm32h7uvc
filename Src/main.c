@@ -203,9 +203,9 @@ void USB_DEVICE_Init(void)
 	    Error_Handler();
 	  }
 
-	  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS,    64);
+	  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS,    48);
 	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 16);
-	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 232);
+	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 256);
 
 	  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_VIDEO) != USBD_OK)
 	  {

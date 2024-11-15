@@ -58,7 +58,7 @@
 #include "jpeg.h"
 #include <stdbool.h>
 
-#define CHUNK_SIZE (sizeof(canvas) / 4)
+#define CHUNK_SIZE (sizeof(canvas) / 5)
 static uint8_t* mdmaInput;
 static uint8_t* mdmaOutput;
 static uint8_t outbytes0[UVC_WIDTH * UVC_HEIGHT];
