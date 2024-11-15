@@ -1,6 +1,6 @@
 # stm32h7uvc
 
-I wanted to make some unusual USB device, for example, a web camera. I settled on an image size of 320x240 pixels because of limitations of USB 1.x, which is present on the [Adafruit WeAct Studio STM32H750](https://www.adafruit.com/product/5032) (STM32H750VBTx CPU @ 480 MHz). By leveraging the hardware JPEG encoder in MDMA mode, I managed to reach a frame rate of approximately 13 fps.
+I wanted to make some unusual USB device, for example, a web camera. I settled on an image size of 320x240 pixels because of limitations of USB 1.x, which is present on the [Adafruit WeAct Studio STM32H750](https://www.adafruit.com/product/5032) (STM32H750VBT6 CPU @ 480 MHz with 128 Kb flash and 1 Mb of RAM). By leveraging the hardware JPEG encoder in MDMA mode, I managed to reach a frame rate of approximately 13 fps.
 
 This demo shows screen with 64 colors and a clock. This is how it looks like in Windows Camera app:
 ![Screenshot](https://raw.githubusercontent.com/abelykh0/stm32h7uvc/refs/heads/main/doc/Camera.png)
