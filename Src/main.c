@@ -52,15 +52,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-extern USBD_HandleTypeDef hUsbDeviceFS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-static void USB_DEVICE_Init(void);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -108,7 +104,6 @@ int main(void)
   MX_FATFS_Init();
   MX_JPEG_Init();
   /* USER CODE BEGIN 2 */
-  USB_DEVICE_Init();
   setup();
   /* USER CODE END 2 */
 
@@ -196,31 +191,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void USB_DEVICE_Init(void)
-{
-	  if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK)
-	  {
-	    Error_Handler();
-	  }
-
-	  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS,    48);
-	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 16);
-	  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 256);
-
-	  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_VIDEO) != USBD_OK)
-	  {
-	    Error_Handler();
-	  }
-	  if (USBD_VIDEO_RegisterInterface(&hUsbDeviceFS, &USBD_VIDEO_fops_FS) != USBD_OK)
-	  {
-	    Error_Handler();
-	  }
-	  if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
-	  {
-	    Error_Handler();
-	  }
-}
-
 /* USER CODE END 4 */
 
 /**
