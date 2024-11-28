@@ -24,6 +24,7 @@
 #include "memorymap.h"
 #include "rtc.h"
 #include "sdmmc.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -103,6 +104,7 @@ int main(void)
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_JPEG_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   setup();
   /* USER CODE END 2 */

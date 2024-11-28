@@ -66,7 +66,7 @@ extern "C" {
 /* the timer number used for the timers
      note: which one you choose depends on the processor family you are using,
            look at the processor-specific header */
-#define PS2_TIM            3
+#define PS2_TIM            2
 
 /* timer clock source frequency (default: SystemCoreClock or SystemCoreClock >> 1) */
 #define PS2_TIM_CLK       SystemCoreClock >> 1
@@ -76,8 +76,8 @@ extern "C" {
 #define PS2_GETTIME()     HAL_GetTick()
 
 /* keyboard clock and port name, pin number (A..K, 0..15) */
-#define PS2_KBDCLK      B, 0  /* If not used leave it that way */
-#define PS2_KBDDATA     B, 1  /* If not used leave it that way */
+#define PS2_KBDCLK      A, 0  /* If not used leave it that way */
+#define PS2_KBDDATA     A, 1  /* If not used leave it that way */
 
 /* keyboard buffer size (8,16,32,64,128,256,512,1024,2048,...)
    - KBDRBUF_SIZE: recommended minimum 32
