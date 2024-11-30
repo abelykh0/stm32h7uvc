@@ -61,7 +61,7 @@ extern "C" {
 /* keyboard EXTI, mouse EXTI, timer interrupt priority (0..15)
      note: 0 = the highest priority, 15 = the lowest priority
            (if freertos: see the FreeRTOSConfig.h) */
-#define PS2_IRQPRIORITY   15
+#define PS2_IRQPRIORITY   0
 
 /* the timer number used for the timers
      note: which one you choose depends on the processor family you are using,
@@ -69,7 +69,7 @@ extern "C" {
 #define PS2_TIM            2
 
 /* timer clock source frequency (default: SystemCoreClock or SystemCoreClock >> 1) */
-#define PS2_TIM_CLK       SystemCoreClock >> 1
+#define PS2_TIM_CLK       SystemCoreClock
 
 /* get milliseconds function name
      note: (HAL_GetTick() or  osKernelSysTick() or ... ) */

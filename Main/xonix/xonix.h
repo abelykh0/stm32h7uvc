@@ -2,8 +2,6 @@
 #ifndef XONIX_H
 #define XONIX_H
 
-#include <xonix/platform.h>
-
 /*
  * xonix global definitions
  *
@@ -36,33 +34,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef USE_X11
-#include <X11/Xos.h>		/* Boolean et al. */
-#include <X11/Intrinsic.h>
-#endif
+#include "Platform.h"
 
-#ifdef USE_MAC
-#include <Types.h>          /* Basistypendeklarationen.                     */
-#include <Memory.h>							     
-#include <QuickDraw.h>      /* Interface-Datei zu den QuickDraw-Datenstruk- */
-                            /* turen und Routinen.                          */
-#include <QDOffscreen.h>    /* Wegen der hintergruendigen GWorld-Geschichten*/
-#include <Fonts.h>          /* Interface-Datei des Font-Managers (wird vom  */
-                            /* Window-Manager benoetigt).                   */
-#include <Windows.h>        /* Interface-Datei des Window-Managers (hier 	*/
-                            /* wird u.a. GetNewWindow deklariert).          */
-#include <Events.h>         /* Interface-Datei zu den Routinen und Daten-   */
-                            /* strukturen des Event-Managers.               */
-#include <ToolUtils.h>      /* ToolBox-Utilities (z.B. HiWord, LoWord).     */
-#include <Menus.h>          /* Interface-Datei des Menu-Managers.           */
-#include <Desk.h>           /* Desk-Manager (Kompatibilitaet zu System 6.x +*/
-                            /* Finder in bezug auf Schreibtischprogramme).  */
-#include <TextEdit.h>       /* Interface-Datei des TextEdit-Managers (wird  */
-                            /* vom Dialog-Manager verwendet).               */
-#include <Dialogs.h>        /* Interface-Datei des Dialog-Managers.         */
-#include <StandardFile.h>   /* Einsprungadressen bzw. Datenstrukturen von   */
-                            /* SFGetFile und SFPutFile.                     */
-#endif /* USE_MAC */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Typedefs.*/
 
@@ -77,23 +53,6 @@ struct rectangle {
 };
 
 typedef struct rectangle myRect;
-
-#ifdef USE_MAC
-struct keyboardPrefs {
-	char	leftKey, rightKey, upKey, downKey, pauseKey;
-};
-
-typedef struct keyboardPrefs kbPrefs, *kbPrefsPtr, **kbPrefsHandle;
-
-struct highScoreEntry {
-	Str255	name;
-	int		score;
-	int		level;
-};
-
-typedef struct highScoreEntry hgScoreEntry, *hgScoreEntryPtr, 
-							**hgScoreEntryHandle;
-#endif /* USE_MAC */
 							
 struct Player   {
   int       x, y;                           /* Koordinaten der Figur        */
@@ -132,39 +91,20 @@ enum attribute  {
 /* etwa 600 bzw. 400 ergeben                                                */
 									     
 #define EATER_SIZE          4               /* Groesse der "Fresser"        */
-#define RATIO               2               /* Faktor von Eater zu Runner   */
-//#define H_STEPS             150             /* Horizontal moegl. Positionen	*/
-//#define V_STEPS             100             /* Vertikal moegl. Positionen 	*/
+#define RATIO               1               /* Faktor von Eater zu Runner   */
 
 #define PERCENT_THRESHOLD	75				/* Fuellstand - Schwelle		*/
 #define LEVEL_BONUS_FACTOR	100.0        /* Bonus fuer geschafftes Level */
 #define LOOP_FACTOR			10.0			/* Faktor fuer Punktberechnung	*/
 
-#define EATER_STEP          1                  /* Schrittweite der "Fresser"*/
 #define FLYER_SIZE          RATIO*EATER_SIZE   /* Groesse der "Flieger"     */
 #define FLYER_STEP          RATIO              /* Schrittweite der "Flieger"*/
 #define RUNNER_SIZE         RATIO*EATER_SIZE   /* Groesse der Spielfigur    */
-#define RUNNER_STEP         RATIO              /* Schrittweite der Spielfig.*/
 #define FIELD_WIDTH         H_STEPS*EATER_SIZE /* Breite des Spielfeldes    */
 #define FIELD_HEIGHT        V_STEPS*EATER_SIZE /* Hoehe des Spielfeldes     */
 
-#define WINDOW_START_X      20
-#define WINDOW_START_Y      40
 #define MAX_FLYER           10
 #define MAX_EATER           4
-
-
-#ifdef USE_X11
-typedef unsigned char * Ptr;
-#define NIL_POINTER			NULL
-#define STEP_TIME           50		/* Schrittweite in ms */
-#define BELL() XBell(dpy, 50)
-#endif
-
-#ifdef USE_MAC
-#define KEY char
-#define BELL() RunnerDieSound()
-#endif
 
 /* ------------------------------------------------------------------------ */
 /* Deklaration der globalen Variablen.                                      */
@@ -193,31 +133,13 @@ extern Ptr          gMyStatusArea;          /* Status-Area                  */
 extern unsigned     gHighScore;	            /* Punktestand                  */
 extern int			gLevel;					/* Es geht mit Level 1 los		*/
 
-#ifdef USE_MAC
-
-extern GWorldPtr    gMyGWorld;              /* Offscreen-Area               */
-
-extern WindowPtr    gTheCWindow;            /* Das Window fuer alles        */
-
-extern Rect         gWorldRect;
-
-#endif /* USE_MAC */
-
-#ifdef USE_X11
-
-extern Display *dpy;
-
-#endif /* USE_X11 */
-
-
 /* ------------------------------------------------------------------------ */
 /* Funktionen								     							*/
 /* ------------------------------------------------------------------------ */
 
 extern void Animate (void);
-extern void Do_Event (void);
 extern void DrawRunnerToGWorld (void);
-extern void DrawWayToGWorld (void);
+extern void DrawWayToGWorld (int xPos, int yPos);
 extern void DrawEmptyToGWorld (int xPos, int yPos);
 extern void DrawFlyerToGWorld (int xPos, int yPos);
 extern void DrawEaterToGWorld (int xPos, int yPos);
@@ -231,70 +153,13 @@ extern void ExitXonix (int number);
 extern void ScorePercentage (int num);
 extern void ScoreLevel (int num);
 extern void ScoreRunner (int num);
-extern void ShowHighScore (void);
+extern void DisplayHighScore (void);
+extern void DrawComplete();
+extern void ScorePoints(int points);
+extern void Do_New (void);
 
-#ifdef USE_MAC
-
-#define NIL_POINTER 0L
-
-#define GWorldEntry() \
-  GDHandle    oldGD; \
-  GWorldPtr   oldGW; \
-  GetGWorld (&oldGW, &oldGD); \
-  LockPixels (gMyGWorld -> portPixMap); \
-  SetGWorld (gMyGWorld, NIL_POINTER)
-
-#define GWorldExit() \
-  SetGWorld (oldGW, oldGD); \
-  SetPort (gTheCWindow); \
-  CopyBits ((BitMap*)*gMyGWorld -> portPixMap, &gTheCWindow -> portBits, \
-	    &gWorldRect, \
-	    &gWorldRect, srcCopy, 0L); \
-  UnlockPixels (gMyGWorld -> portPixMap)
-
-#define GWorldExitFlyer() \
-  SetGWorld (oldGW, oldGD); \
-  SetPort (gTheCWindow); \
-  for (i = 0; i < gFlyerCount; i ++) \
-  	CopyBits ((BitMap*)*gMyGWorld -> portPixMap, &gTheCWindow -> portBits, \
-	    &gFlyer[i].rr, \
-	    &gFlyer[i].rr, srcCopy, 0L); \
-  UnlockPixels (gMyGWorld -> portPixMap)
-
-#define GWorldExitEater() \
-  SetGWorld (oldGW, oldGD); \
-  SetPort (gTheCWindow); \
-  for (i = 0; i < gEaterCount; i ++) \
-  	CopyBits ((BitMap*)*gMyGWorld -> portPixMap, &gTheCWindow -> portBits, \
-	    &gEater[i].rr, \
-	    &gEater[i].rr, srcCopy, 0L); \
-  UnlockPixels (gMyGWorld -> portPixMap)
-
-#define GWorldExitRunner() \
-  SetGWorld (oldGW, oldGD); \
-  SetPort (gTheCWindow); \
-  CopyBits ((BitMap*)*gMyGWorld -> portPixMap, &gTheCWindow -> portBits, \
-	    &gMyRunner.rr, \
-	    &gMyRunner.rr, srcCopy, 0L); \
-  UnlockPixels (gMyGWorld -> portPixMap)
-
-#endif /* USE_MAC */
-
-#ifdef USE_X11
-
-#define GWorldEntry()
-#define GWorldExit()
-#define GWorldExitFlyer()
-#define GWorldExitEater()
-#define GWorldExitRunner()
-
-#endif /* USE_X11 */
-
-#ifdef __FreeBSD__
-
-#define rand() random()
-#define srand(x) srandom(x)
-
-#endif /* __FreeBSD */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* XONIX_H */

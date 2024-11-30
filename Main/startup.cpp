@@ -1,3 +1,4 @@
+#include <screen/screen.h>
 #include <xonix/platform.h>
 #include "startup.h"
 #include "usbd_core.h"
@@ -5,7 +6,6 @@
 #include "usbd_video_if.h"
 #include "stm32h7xx_hal.h"
 #include "rtc.h"
-#include "screen/Screen.h"
 #include "keyboard/ps2.h"
 
 volatile uint32_t kbd_rxof = 0, mouse_rxof = 0;
@@ -35,10 +35,11 @@ extern "C" void setup()
 	config.ImageQuality = 90;
 	HAL_JPEG_ConfigEncoding(&hjpeg, &config);
 
+	screen.SetAttribute(0x3F10);
+
 	GameInit();
 
 	/*
-	screen.SetAttribute(0x3F10);
 	screen.Clear();
 
     // Frame
@@ -77,7 +78,7 @@ extern "C" void setup()
 
 extern "C" void loop()
 {
-	GameUpdate();
+	int32_t key = GameUpdate();
 	/*
 	char showTime[20];
 
@@ -89,8 +90,13 @@ extern "C" void loop()
 	HAL_RTC_GetTime(&hrtc, &timeStruct, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &dateStruct, RTC_FORMAT_BIN); // important
 	sprintf(showTime, " %.2d:%.2d:%.2d ", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds);
-    screen.PrintAlignCenter(0, showTime);
 	*/
+	char buffer[20];
+	if (key != 0)
+	{
+		sprintf(buffer, "%.4lx", key);
+		screen.PrintAlignCenter(29, buffer);
+	}
 }
 
 void USB_DEVICE_Init()

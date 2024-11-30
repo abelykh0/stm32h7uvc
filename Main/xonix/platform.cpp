@@ -4,164 +4,21 @@
 #include "rtc.h"
 
 #include "platform.h"
-#include "xonix.h"
 #include "gamefont4x4.h"
 #include "keyboard/ps2.h"
 #include "screen/canvas.h"
+#include "screen/screen.h"
 
-#define LABEL_COLOR 0xFF00
+extern "C" {
+#include "xonix.h"
+}
+
+#define SPRITE_COLOR 0x0C00
+#define LABEL_COLOR 0x3F00
 #define SCORE_COLOR 0x3300
 
 uint8_t gMyStatusArea[H_STEPS * V_STEPS];
-
-time_t time(time_t* second)
-{
-	RTC_DateTypeDef dateStruct;
-	RTC_TimeTypeDef timeStruct;
-	timeStruct.TimeFormat = RTC_HOURFORMAT_24;
-	HAL_RTC_GetTime(&hrtc, &timeStruct, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &dateStruct, RTC_FORMAT_BIN);
-
-	struct tm currentDate;
-	currentDate.tm_year = dateStruct.Year + 2000 - 1900;
-	currentDate.tm_mon = dateStruct.Month - 1;
-	currentDate.tm_mday = dateStruct.Date - 1;
-	currentDate.tm_hour = timeStruct.Hours - 1;
-	currentDate.tm_min = timeStruct.Minutes - 1;
-	currentDate.tm_sec = timeStruct.Seconds - 1;
-
-	time_t result = mktime(&currentDate);
-	return result;
-
-}
-
-void DrawSprite(int xPos, int yPos, uint8_t spriteIndex)
-{
-	uint8_t* sprite = (uint8_t*)&gameFont4x4[spriteIndex * 4];
-	for (uint8_t y = 0; y < 4; y++)
-	{
-		for (uint8_t x = 0; x < 4; x++)
-		{
-        	uint8_t color;
-            if ((*sprite << x) & 0x08)
-            {
-            	// foreground color
-            	color = (LABEL_COLOR >> 8) & 0x03F;
-            }
-            else
-            {
-            	// background color
-            	color = LABEL_COLOR & 0x03F;
-            }
-
-            SetPixel(xPos * 4 + x, yPos * 4 + y, color);
-		}
-
-		sprite += 4;
-	}
-}
-
-void DrawRunnerToGWorld()
-{
-	DrawSprite(gMyRunner.x, gMyRunner.y, 0x01);
-}
-
-void DrawWayToGWorld()
-{
-	DrawSprite(gMyRunner.x, gMyRunner.y, 0x05);
-}
-
-void DrawEaterToGWorld(int xPos, int yPos)
-{
-	DrawSprite(xPos, yPos, 0x02);
-}
-
-void DrawEmptyToGWorld(int xPos, int yPos)
-{
-	DrawSprite(xPos, yPos, 0x00);
-}
-
-void DrawFlyerToGWorld(int xPos, int yPos)
-{
-	DrawSprite(xPos, yPos, 0x03);
-}
-
-void DrawFilledToGWorld(int xPos, int yPos)
-{
-	DrawSprite(xPos, yPos, 0x04);
-}
-
-void DrawSmallFilledToGWorld(int xPos, int yPos)
-{
-	DrawSprite(xPos, yPos, 0x04);
-}
-
-void DrawCompleteInside()
-{
-	int i, j;
-
-	for (j = 0; j < V_STEPS; j++)
-	{
-		for (i = 0; i < H_STEPS; i++)
-		{
-			unsigned char c = *(gMyStatusArea + (j * H_STEPS) + i);
-			if ((c & FILLED) || (c & BORDER) || (c & EATER))
-			{
-				DrawSmallFilledToGWorld(i, j);
-			}
-			else if (c & FLYER)
-			{
-				DrawFlyerToGWorld(i, j);
-			}
-			else if (c & WAY)
-			{
-				DrawWayToGWorld();
-			}
-			else if (c & RUNNER)
-			{
-				DrawRunnerToGWorld();
-			}
-			else
-			{
-				DrawEmptyToGWorld(i, j);
-			}
-		}
-	}
-
-	for (i = 0; i < gEaterCount; i++)
-	{
-		DrawEaterToGWorld(gEater[i].x, gEater[i].y);
-	}
-}
-
-void DrawCompleteBorder()
-{
-	int i;
-
-	for (i = 0; i < H_STEPS; i += RATIO)
-	{
-		DrawFilledToGWorld(i, 0);
-		DrawFilledToGWorld(i, V_STEPS - 2);
-
-		if (RATIO == 1)
-		{
-			DrawFilledToGWorld(i, 1);
-			DrawFilledToGWorld(i, V_STEPS - 1);
-		}
-	}
-
-	for (i = 2; i < V_STEPS - 2; i += RATIO)
-	{
-		DrawFilledToGWorld(0, i);
-		DrawFilledToGWorld(H_STEPS - 1, i);
-
-		if (RATIO == 1)
-		{
-			DrawFilledToGWorld(1, i);
-			DrawFilledToGWorld(H_STEPS - 2, i);
-		}
-	}
-}
+Display::Screen gScreen;
 
 void GameInit()
 {
@@ -202,7 +59,149 @@ int32_t GameUpdate()
 		}
     }
 
-    return result;
+    return result ? kbd_key : 0;
+}
+
+extern "C" time_t time(time_t* second)
+{
+	RTC_DateTypeDef dateStruct;
+	RTC_TimeTypeDef timeStruct;
+	timeStruct.TimeFormat = RTC_HOURFORMAT_24;
+	HAL_RTC_GetTime(&hrtc, &timeStruct, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &dateStruct, RTC_FORMAT_BIN);
+
+	struct tm currentDate;
+	currentDate.tm_year = dateStruct.Year + 2000 - 1900;
+	currentDate.tm_mon = dateStruct.Month - 1;
+	currentDate.tm_mday = dateStruct.Date - 1;
+	currentDate.tm_hour = timeStruct.Hours - 1;
+	currentDate.tm_min = timeStruct.Minutes - 1;
+	currentDate.tm_sec = timeStruct.Seconds - 1;
+
+	time_t result = mktime(&currentDate);
+	return result;
+}
+
+void DrawSprite(int xPos, int yPos, uint8_t spriteIndex)
+{
+	uint8_t* sprite = (uint8_t*)&gameFont4x4[spriteIndex * 4];
+	for (uint8_t y = 0; y < 4; y++)
+	{
+		for (uint8_t x = 0; x < 4; x++)
+		{
+        	uint8_t color;
+            if ((*sprite << x) & 0x80)
+            {
+            	// foreground color
+            	color = (SPRITE_COLOR >> 8) & 0x03F;
+            }
+            else
+            {
+            	// background color
+            	color = SPRITE_COLOR & 0x03F;
+            }
+
+            SetPixel(xPos * 4 + x, yPos * 4 + y, color);
+		}
+
+		sprite++;
+	}
+}
+
+void DrawEmptyToGWorld(int xPos, int yPos)
+{
+	DrawSprite(xPos, yPos, 0x00);
+}
+
+void DrawRunnerToGWorld()
+{
+	DrawSprite(gMyRunner.x, gMyRunner.y, 0x01);
+}
+
+void DrawEaterToGWorld(int xPos, int yPos)
+{
+	DrawSprite(xPos, yPos, 0x02);
+}
+
+void DrawFlyerToGWorld(int xPos, int yPos)
+{
+	DrawSprite(xPos, yPos, 0x03);
+}
+
+void DrawFilledToGWorld(int xPos, int yPos)
+{
+	DrawSprite(xPos, yPos, 0x04);
+}
+
+void DrawSmallFilledToGWorld(int xPos, int yPos)
+{
+	DrawSprite(xPos, yPos, 0x04);
+}
+
+void DrawWayToGWorld(int xPos, int yPos)
+{
+	DrawSprite(gMyRunner.x, gMyRunner.y, 0x05);
+}
+
+void DrawComplete()
+{
+	int i, j;
+
+	for (j = 0; j < V_STEPS; j++)
+	{
+		for (i = 0; i < H_STEPS; i++)
+		{
+			unsigned char c = *(gMyStatusArea + (j * H_STEPS) + i);
+			if ((c & FILLED) || (c & BORDER) || (c & EATER))
+			{
+				DrawSmallFilledToGWorld(i, j);
+			}
+			else if (c & FLYER)
+			{
+				DrawFlyerToGWorld(i, j);
+			}
+			else
+			{
+				DrawEmptyToGWorld(i, j);
+			}
+		}
+	}
+
+	DrawWayToGWorld(0, 0);
+	DrawRunnerToGWorld();
+	for (i = 0; i < gEaterCount; i++)
+	{
+		DrawEaterToGWorld(gEater[i].x, gEater[i].y);
+	}
+}
+
+void DrawCompleteBorder()
+{
+	int i;
+
+	for (i = 0; i < H_STEPS; i += RATIO)
+	{
+		DrawFilledToGWorld(i, 0);
+		DrawFilledToGWorld(i, V_STEPS - 2);
+
+		if (RATIO == 1)
+		{
+			DrawFilledToGWorld(i, 1);
+			DrawFilledToGWorld(i, V_STEPS - 1);
+		}
+	}
+
+	for (i = 2; i < V_STEPS - 2; i += RATIO)
+	{
+		DrawFilledToGWorld(0, i);
+		DrawFilledToGWorld(H_STEPS - 1, i);
+
+		if (RATIO == 1)
+		{
+			DrawFilledToGWorld(1, i);
+			DrawFilledToGWorld(H_STEPS - 2, i);
+		}
+	}
 }
 
 void Quit()

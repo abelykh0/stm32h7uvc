@@ -89,7 +89,6 @@ void NewRunner (void);
 void NewEater (void);
 void NewPlayRoom (void);
 void GetNewPlayer (void);
-void CheckStatus (void);
 void DrawCompleteBorder (void);
 void ResetGlobals (void);
 void SetPlayerToStatus (int xPos, int yPos, unsigned char figur);
@@ -109,11 +108,6 @@ void Do_New (void)
 	NewPlayRoom ();								/* Neue Spielwiese anlegen	*/
 
     gRun = TRUE;                                /* ... und ab gehts         */
-   																			 
-#ifdef USE_MAC    															 
-    if (gTheCWindow)							/* das Window ist doch da ? */
-        ShowWindow (gTheCWindow);
-#endif
 
     return;
 }
@@ -261,15 +255,15 @@ void ResetStatus (void)
 {
 	int i, j, k;
 	
-    i = H_STEPS * V_STEPS;                      /* Also z.B. 150 x 100      */
-    j = H_STEPS * RATIO + RATIO;                /* Beginn EMPTY-Bereich		*/
-    k = H_STEPS - (2 * RATIO);                  /* Breite EMPTY-Bereiches	*/
+    i = H_STEPS * V_STEPS;            /* Also z.B. 150 x 100    */
+    j = H_STEPS * 2 + 2;              /* Beginn EMPTY-Bereich	*/
+    k = H_STEPS - 4;                  /* Breite EMPTY-Bereiches	*/
    																			 
     memset (gMyStatusArea, (char) FILLED, i);   /* erstmal ist alles Rahmen */
    																			 
     memset (gMyStatusArea + j, (char) EMPTY, k);    /* Eine Zeile mit Rand  */
 
-    for (i = 1; i < V_STEPS - 2 * RATIO; i ++)
+    for (i = 1; i < V_STEPS - 4; i ++)
 	{
         memcpy (gMyStatusArea + j + (i * H_STEPS),
                 gMyStatusArea + j, k);          /* Erste EMPTY-Zeile auf 	*/
@@ -457,9 +451,7 @@ void NewPlayRoom (void)
 
 	ResetStatus ();
 
-	DrawCompleteInside ();
-
-	DrawCompleteBorder ();
+	DrawComplete ();
 
 	ScorePercentage (0);
 
@@ -492,7 +484,7 @@ void NewPlayRoom (void)
 
 void NewLevel (void)
 {
-	gHighScore += gLevel * LEVEL_BONUS_FACTOR;
+	gHighScore += (unsigned int)(gLevel * LEVEL_BONUS_FACTOR);
 
 	ScorePoints (gHighScore);
 
@@ -740,7 +732,7 @@ Boolean	SeedFillUp (int xStart, int yStart, Boolean wayToFill)
 	mySegment	sg;
 	Boolean runFlag;
 	int l;
-	unsigned char ov, av, nv, wv;
+	unsigned char ov, av=0, nv, wv;
 	int i, j, m, n;
 
 	if ((fillStack = InitSegmentStack ()) == NIL_POINTER)
@@ -803,11 +795,10 @@ Boolean	SeedFillUp (int xStart, int yStart, Boolean wayToFill)
 				PushSeg (fillStack, sg.y, sg.xr + RATIO, xStart - RATIO, 
 									-sg.dy);
 
-skip:		for (xStart += RATIO; xStart <= sg.xr &&
+skip:                  
+    		for (xStart += RATIO; xStart <= sg.xr &&
 				*(gMyStatusArea + H_STEPS * sg.y + xStart) != ov;
-				xStart += RATIO)
-			{
-			}
+				xStart += RATIO) {}
 
 			l = xStart;
 		}
@@ -975,7 +966,7 @@ unsigned char NewRunnerPosition (void)
                                         (unsigned char) RUNNER);
                     SetPlayerToStatus (gMyRunner.x, gMyRunner.y,
                                         (unsigned char) WAY);
-                    DrawWayToGWorld ();
+                    DrawWayToGWorld (gMyRunner.x, gMyRunner.y);
    
                     gMyRunner.x += gMyRunner.dx;
                     gMyRunner.y += gMyRunner.dy;
@@ -1008,7 +999,7 @@ unsigned char NewRunnerPosition (void)
         {
             SetPlayerToStatus (gMyRunner.x, gMyRunner.y,
                                 (unsigned char) WAY);
-            DrawWayToGWorld ();
+            DrawWayToGWorld (gMyRunner.x, gMyRunner.y);
         }
         else
         {
@@ -1075,7 +1066,7 @@ void FillNewArea (void)
 
 	ScorePercentage (percent);
 
-    gHighScore += (gFillCount - oldFillCount) * gLevel * LOOP_FACTOR / gLoops;
+    gHighScore += (unsigned int)((gFillCount - oldFillCount) * gLevel * LOOP_FACTOR / gLoops);
 
     ScorePoints (gHighScore);
     
@@ -1240,9 +1231,7 @@ void GetNewPlayer (void)
 		gRun = FALSE;
 		gQuit = TRUE;
 		gEndOfGame = TRUE;
-#ifndef USE_MAC					/* mac does it inside the main loop */
 		DisplayHighScore();
-#endif
 	}
 	else
 	{
