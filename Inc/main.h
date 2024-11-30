@@ -65,6 +65,11 @@ void Error_Handler(void);
 #define LCD_CS_GPIO_Port GPIOE
 #define LCD_WR_RS_Pin GPIO_PIN_13
 #define LCD_WR_RS_GPIO_Port GPIOE
+#define PS2_CLK_Pin GPIO_PIN_9
+#define PS2_CLK_GPIO_Port GPIOA
+#define PS2_CLK_EXTI_IRQn EXTI9_5_IRQn
+#define PS2_DATA_Pin GPIO_PIN_10
+#define PS2_DATA_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

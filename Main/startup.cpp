@@ -6,7 +6,7 @@
 #include "usbd_video_if.h"
 #include "stm32h7xx_hal.h"
 #include "rtc.h"
-#include "keyboard/ps2.h"
+#include "keyboard/ps2_keyboard.h"
 
 volatile uint32_t kbd_rxof = 0, mouse_rxof = 0;
 
@@ -36,6 +36,7 @@ extern "C" void setup()
 	HAL_JPEG_ConfigEncoding(&hjpeg, &config);
 
 	screen.SetAttribute(0x3F10);
+	Ps2_Initialize();
 
 	GameInit();
 
@@ -94,7 +95,7 @@ extern "C" void loop()
 	char buffer[20];
 	if (key != 0)
 	{
-		sprintf(buffer, "%.4lx", key);
+		sprintf(buffer, "%.8lx", key);
 		screen.PrintAlignCenter(29, buffer);
 	}
 }

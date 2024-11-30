@@ -5,7 +5,7 @@
 
 #include "platform.h"
 #include "gamefont4x4.h"
-#include "keyboard/ps2.h"
+#include "keyboard/ps2_keyboard.h"
 #include "screen/canvas.h"
 #include "screen/screen.h"
 
@@ -30,36 +30,32 @@ int32_t GameUpdate()
 	Animate();
 	HAL_Delay(STEP_TIME);
 
-	uint8_t kbd_key;
-    int8_t result = ps2_kbd_getkey(&kbd_key);
-    if (result)
+    int32_t scanCode = Ps2_GetScancode();
+    switch (scanCode)
     {
-    switch (kbd_key)
-    {
-		case ' ': // STOP
-			gMyRunner.dx = 0;
-			gMyRunner.dy = 0;
-			break;
-		case PS2_LEFTARROW:
-			gMyRunner.dx = -RATIO;
-			gMyRunner.dy = 0;
-			break;
-		case PS2_RIGHTARROW:
-			gMyRunner.dx = RATIO;
-			gMyRunner.dy = 0;
-			break;
-		case PS2_UPARROW:
-			gMyRunner.dy = -RATIO;
-			gMyRunner.dx = 0;
-			break;
-		case PS2_DOWNARROW:
-			gMyRunner.dy = RATIO;
-			gMyRunner.dx = 0;
-			break;
-		}
+    case KEY_SPACEBAR: // STOP
+ 		gMyRunner.dx = 0;
+ 		gMyRunner.dy = 0;
+        break;
+    case KEY_LEFTARROW:
+ 		gMyRunner.dx = -RATIO;
+ 		gMyRunner.dy = 0;
+        break;
+    case KEY_RIGHTARROW:
+ 		gMyRunner.dx = RATIO;
+ 		gMyRunner.dy = 0;
+        break;
+    case KEY_UPARROW:
+ 		gMyRunner.dy = -RATIO;
+ 		gMyRunner.dx = 0;
+        break;
+    case KEY_DOWNARROW:
+ 		gMyRunner.dy = RATIO;
+ 		gMyRunner.dx = 0;
+        break;
     }
 
-    return result ? kbd_key : 0;
+    return scanCode;
 }
 
 extern "C" time_t time(time_t* second)
@@ -167,7 +163,6 @@ void DrawComplete()
 		}
 	}
 
-	DrawWayToGWorld(0, 0);
 	DrawRunnerToGWorld();
 	for (i = 0; i < gEaterCount; i++)
 	{
