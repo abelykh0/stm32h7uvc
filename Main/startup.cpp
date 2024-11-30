@@ -1,11 +1,12 @@
+#include <xonix/platform.h>
 #include "startup.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_video_if.h"
 #include "stm32h7xx_hal.h"
 #include "rtc.h"
-#include "Screen.h"
-#include "espectrum/keyboard/ps2.h"
+#include "screen/Screen.h"
+#include "keyboard/ps2.h"
 
 volatile uint32_t kbd_rxof = 0, mouse_rxof = 0;
 
@@ -34,6 +35,9 @@ extern "C" void setup()
 	config.ImageQuality = 90;
 	HAL_JPEG_ConfigEncoding(&hjpeg, &config);
 
+	GameInit();
+
+	/*
 	screen.SetAttribute(0x3F10);
 	screen.Clear();
 
@@ -68,10 +72,13 @@ extern "C" void setup()
 
 	screen.SetAttribute(0x3F10);
     //screen.PrintAlignCenter(0, " Hello, world! ");
+    */
 }
 
 extern "C" void loop()
 {
+	GameUpdate();
+	/*
 	char showTime[20];
 
 	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
@@ -83,15 +90,7 @@ extern "C" void loop()
 	HAL_RTC_GetDate(&hrtc, &dateStruct, RTC_FORMAT_BIN); // important
 	sprintf(showTime, " %.2d:%.2d:%.2d ", timeStruct.Hours, timeStruct.Minutes, timeStruct.Seconds);
     screen.PrintAlignCenter(0, showTime);
-
-    uint8_t ch;
-    while (ps2_kbd_getkey(&ch) == 1)
-    { /* recevied keyboard data */
-      if(ch >= 32)
-        printf("Kbd: '%c', 0x%X\r\n", ch, ch);
-      else
-        printf("Kbd:       0x%X\r\n", ch);
-    }
+	*/
 }
 
 void USB_DEVICE_Init()
@@ -120,6 +119,7 @@ void USB_DEVICE_Init()
 	  }
 }
 
+/*
 // ----------------------------------------------------------------------------
 void ps2_kbd_cbrx(uint8_t kbd_data_rx)
 {
@@ -134,3 +134,4 @@ void ps2_kbd_cbrxerror(uint32_t rx_errorcode)
   else if(rx_errorcode == PS2_ERROR_PARITY)
     printf("Kbd parity error\r\n");
 }
+*/

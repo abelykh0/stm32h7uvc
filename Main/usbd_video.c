@@ -53,10 +53,9 @@
 #include "usbd_ctlreq.h"
 #include "usbd_core.h"
 #include "stm32h7xx_hal.h"
-#include "sample_picture.h"
-#include "canvas.h"
 #include "jpeg.h"
 #include <stdbool.h>
+#include "screen/canvas.h"
 
 #define CHUNK_SIZE (sizeof(canvas) / 5)
 static uint8_t* mdmaInput;

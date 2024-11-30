@@ -156,12 +156,12 @@ void Screen::DrawChar(const uint8_t* f, uint16_t x, uint16_t y, uint8_t c)
             if ((line << j) & 0x80)
             {
             	// foreground color
-            	color = (this->_attribute >> 8) & 0x0FFF;
+            	color = (this->_attribute >> 8) & 0x03F;
             }
             else
             {
             	// background color
-            	color = this->_attribute & 0x0FFF;
+            	color = this->_attribute & 0x03F;
             }
 
             SetPixel(x * 8 + j, y * 8 + i, color);

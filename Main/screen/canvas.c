@@ -1,5 +1,5 @@
-#include <canvas.h>
 #include "string.h"
+#include "screen/canvas.h"
 
 uint8_t canvas[] /*__attribute__(( section(".sram2") ))*/;
 static Mcu* canvasMcu = (Mcu*)canvas;
