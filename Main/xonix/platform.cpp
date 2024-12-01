@@ -26,10 +26,10 @@ void GameInit()
 	xonixScreen.Clear();
 
 	xonixScreen.SetAttribute(LABEL_COLOR);
-	xonixScreen.PrintAt(0, 29, "Lvl:");
-	xonixScreen.PrintAt(7, 29, "Fl:");
-	xonixScreen.PrintAt(14, 29, "Pl:");
-	xonixScreen.PrintAt(20, 29, "Score:");
+	xonixScreen.PrintAt(0, 29, "Level:");
+	xonixScreen.PrintAt(9, 29, "Fill:");
+	xonixScreen.PrintAt(18, 29, "Player:");
+	xonixScreen.PrintAt(28, 29, "Score:");
 
 	xonixScreen.SetAttribute(SCORE_COLOR);
 
@@ -219,28 +219,28 @@ void ScoreLevel(int num)
 {
 	char buffer[10];
 	sprintf(buffer, "%02d ", num);
-	xonixScreen.PrintAt(4, 29, buffer);
+	xonixScreen.PrintAt(6, 29, buffer);
 }
 
 void ScorePercentage(int num)
 {
 	char buffer[10];
 	sprintf(buffer, "%02d%% ", num);
-	xonixScreen.PrintAt(10, 29, buffer);
+	xonixScreen.PrintAt(14, 29, buffer);
 }
 
 void ScoreRunner(int num)
 {
  	char buffer[10];
 	sprintf(buffer, "%02d ", num);
-	xonixScreen.PrintAt(17, 29, buffer);
+	xonixScreen.PrintAt(25, 29, buffer);
 }
 
 void ScorePoints(int points)
 {
 	char buffer[20];
 	sprintf(buffer, "%06d", points);
-	xonixScreen.PrintAt(26, 29, buffer);
+	xonixScreen.PrintAt(34, 29, buffer);
 }
 
 void DisplayHighScore()
