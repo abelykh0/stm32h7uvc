@@ -35,8 +35,7 @@ typedef struct
 extern uint8_t canvas[MCU_WIDTH * MCU_HEIGHT * sizeof(Mcu)]; // 230,400
 
 void Clear(uint8_t color);
-void Set8x8Pixels(int x, int y, uint8_t color);
-void SetPixel(int x, int y, uint8_t color);
+void SetPixel(uint16_t x, uint16_t y, uint8_t color);
 
 #ifdef __cplusplus
 }

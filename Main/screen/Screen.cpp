@@ -148,7 +148,6 @@ void Screen::DrawChar(const uint8_t* f, uint16_t x, uint16_t y, uint8_t c)
 
     for (int i = 0; i < 8; i++)
     {
-        // Convert each byte to a binary string and print it
     	uint8_t line = character[i];
         for (int j = 0; j < 8; j++)
         {

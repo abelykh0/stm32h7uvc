@@ -88,9 +88,14 @@ void Clear(uint8_t color)
 	}
 }
 
-// MCU_WIDTH x MCU_HEIGHT pixels
-void SetPixel(int x, int y, uint8_t color)
+// UVC_WIDTH x UVC_HEIGHT pixels
+void SetPixel(uint16_t x, uint16_t y, uint8_t color)
 {
+	if (x >= UVC_WIDTH || y >= UVC_HEIGHT)
+	{
+		return;
+	}
+
 	uint8_t colorIndex = color & 0x3F;
 	Mcu* mcu = &canvasMcu[x / 8 + (y / 8 * MCU_WIDTH)];
 	uint8_t xOffset = x % 8;

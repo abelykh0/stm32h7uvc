@@ -14,14 +14,25 @@ extern "C" {
 }
 
 #define SPRITE_COLOR 0x0C00
-#define LABEL_COLOR 0x3F00
-#define SCORE_COLOR 0x3300
+#define LABEL_COLOR 0x2A00
+#define SCORE_COLOR 0x3F00
 
 uint8_t gMyStatusArea[H_STEPS * V_STEPS];
-Display::Screen gScreen;
+Display::Screen xonixScreen;
 
 void GameInit()
 {
+	xonixScreen.SetAttribute(LABEL_COLOR);
+	xonixScreen.Clear();
+
+	xonixScreen.SetAttribute(LABEL_COLOR);
+	xonixScreen.PrintAt(0, 29, "Lvl:");
+	xonixScreen.PrintAt(7, 29, "Fl:");
+	xonixScreen.PrintAt(14, 29, "Pl:");
+	xonixScreen.PrintAt(20, 29, "Score:");
+
+	xonixScreen.SetAttribute(SCORE_COLOR);
+
  	Do_New();
 }
 
@@ -206,38 +217,30 @@ void Quit()
 
 void ScoreLevel(int num)
 {
-    //Vga::printAt(0, 23, "Lvl:", LABEL_COLOR);
-
 	char buffer[10];
 	sprintf(buffer, "%02d ", num);
-    //Vga::printAt(4, 23, buffer, SCORE_COLOR);
+	xonixScreen.PrintAt(4, 29, buffer);
 }
 
 void ScorePercentage(int num)
 {
-    //Vga::printAt(7, 23, "Fl:", LABEL_COLOR);
-
 	char buffer[10];
 	sprintf(buffer, "%02d%% ", num);
-    //Vga::printAt(10, 23, buffer, SCORE_COLOR);
+	xonixScreen.PrintAt(10, 29, buffer);
 }
 
 void ScoreRunner(int num)
 {
-    //Vga::printAt(14, 23, "Pl:", LABEL_COLOR);
-
-	char buffer[10];
+ 	char buffer[10];
 	sprintf(buffer, "%02d ", num);
-    //Vga::printAt(17, 23, buffer, SCORE_COLOR);
+	xonixScreen.PrintAt(17, 29, buffer);
 }
 
 void ScorePoints(int points)
 {
-    //Vga::printAt(20, 23, "Score:", LABEL_COLOR);
-
 	char buffer[20];
 	sprintf(buffer, "%06d", points);
-   // Vga::printAt(26, 23, buffer, SCORE_COLOR);
+	xonixScreen.PrintAt(26, 29, buffer);
 }
 
 void DisplayHighScore()
