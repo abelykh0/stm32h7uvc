@@ -171,6 +171,12 @@ SECTIONS
     . = ALIGN(4);
     *(.sram2)           /* .sram2 sections (variables) */
   } >RAM_D2
+  
+  .sram3 :
+  {
+    . = ALIGN(4);
+    *(.sram3)           /* .sram3 sections (variables) */
+  } >RAM_D3
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

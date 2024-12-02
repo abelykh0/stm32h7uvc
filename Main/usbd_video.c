@@ -57,8 +57,7 @@
 #include <stdbool.h>
 #include "screen/canvas.h"
 
-#define CHUNK_SIZE (sizeof(canvas) / 5)
-static uint8_t* mdmaInput;
+static uint8_t chunkIndex;
 static uint8_t* mdmaOutput;
 static uint8_t outbytes0[UVC_WIDTH * UVC_HEIGHT];
 static uint8_t outbytes1[UVC_WIDTH * UVC_HEIGHT];
@@ -630,7 +629,8 @@ static uint8_t USBD_VIDEO_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *
 
 void HAL_JPEG_GetDataCallback(JPEG_HandleTypeDef *hjpeg, uint32_t NbDecodedData)
 {
-    mdmaInput += NbDecodedData;
+	chunkIndex++;
+	uint8_t* mdmaInput = GetChunkPointer(chunkIndex);
     HAL_JPEG_ConfigInputBuffer(hjpeg, mdmaInput, CHUNK_SIZE);
 }
 
@@ -685,7 +685,9 @@ static uint8_t USBD_VIDEO_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 		/*
 		SCB_InvalidateICache();
 		*/
-		mdmaInput = canvas;
+
+		chunkIndex = 0;
+		uint8_t* mdmaInput = GetChunkPointer(chunkIndex);
 		mdmaOutput = write_pointer + sizeof(header);
 		HAL_JPEG_Encode_DMA(&hjpeg,
 				mdmaInput, CHUNK_SIZE,

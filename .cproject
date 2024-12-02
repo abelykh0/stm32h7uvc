@@ -61,7 +61,7 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.1777502820" name="MCU/MPU G++ Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.debuglevel.940082331" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.debuglevel" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.debuglevel.value.g3" valueType="enumerated"/>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.optimization.level.770493922" name="Optimization level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.optimization.level" useByScannerDiscovery="false"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths.917820833" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths.917820833" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Inc"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Main}&quot;"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32H7xx_HAL_Driver/Inc"/>
@@ -73,7 +73,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FatFs/src"/>
 									<listOptionValue builtIn="false" value="../Utilities/JPEG"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.787781778" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.787781778" name="Define symbols (-D)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="NO_USBD_UVC_FORMAT_UNCOMPRESSED"/>
 									<listOptionValue builtIn="false" value="STM32H750xx"/>
@@ -108,13 +108,13 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Main"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Main"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -176,7 +176,7 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.1566144669" name="MCU/MPU G++ Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.debuglevel.1039155852" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.debuglevel" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.debuglevel.value.g0" valueType="enumerated"/>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.optimization.level.2016503383" name="Optimization level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.optimization.level.value.os" valueType="enumerated"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths.1071064667" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths.1071064667" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Inc"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Main}&quot;"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32H7xx_HAL_Driver/Inc"/>
@@ -188,7 +188,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FatFs/src"/>
 									<listOptionValue builtIn="false" value="../Utilities/JPEG"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.1101971778" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols.1101971778" name="Define symbols (-D)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.option.definedsymbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="NO_USBD_UVC_FORMAT_UNCOMPRESSED"/>
 									<listOptionValue builtIn="false" value="STM32H750xx"/>
@@ -222,13 +222,13 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Main"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Main"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utilities"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

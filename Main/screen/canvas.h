@@ -8,18 +8,6 @@ extern "C" {
 #include "stdint.h"
 #include "usbd_video_conf.h"
 
-/* 420
-typedef struct
-{
-	uint8_t y[4][8][8];
-	uint8_t cb[8][8];
-	uint8_t cr[8][8];
-} __attribute__((packed)) Mcu;
-
-#define MCU_WIDTH (UVC_WIDTH / 8 / 2)
-#define MCU_HEIGHT (UVC_WIDTH / 8 / 2)
-*/
-
 typedef struct
 {
 	uint8_t y[8][8];
@@ -27,15 +15,27 @@ typedef struct
 	uint8_t cr[8][8];
 } __attribute__((packed)) Mcu;
 
+typedef struct
+{
+	uint8_t y;
+	uint8_t cb;
+	uint8_t cr;
+} __attribute__((packed)) YCbCr;
+
 #define MCU_WIDTH (UVC_WIDTH / 8)
 #define MCU_HEIGHT (UVC_HEIGHT / 8)
 #define TEXT_COLUMNS (UVC_WIDTH / 8)
 #define TEXT_ROWS (UVC_HEIGHT / 8)
+#define CHUNK_SIZE_IN_MCU (MCU_WIDTH * 4)
+#define CHUNK_SIZE (CHUNK_SIZE_IN_MCU * sizeof(Mcu))
 
-extern uint8_t canvas[MCU_WIDTH * MCU_HEIGHT * sizeof(Mcu)]; // 230,400
+uint8_t getVerticalOffset();
+void setVerticalOffset(uint8_t offset);
 
 void Clear(uint8_t color);
 void SetPixel(uint16_t x, uint16_t y, uint8_t color);
+YCbCr GetPixel(uint16_t x, uint16_t y);
+uint8_t* GetChunkPointer(uint8_t chunkIndex);
 
 #ifdef __cplusplus
 }
