@@ -6,12 +6,14 @@
 #include "usbd_video_if.h"
 #include "quadspi.h"
 #include "w25qxx_qspi.h"
+#include "user_diskio.h"
+#include "fatfs.h"
 
 #include "screen/screen.h"
 #include "keyboard/ps2_keyboard.h"
-#include "demo_colors/demo_colors.h"
 #include "emulator/bkEmu.h"
-#include "xonix/platform.h"
+//#include "demo_colors/demo_colors.h"
+//#include "xonix/platform.h"
 
 extern JPEG_HandleTypeDef hjpeg;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -30,9 +32,45 @@ extern "C" void initialize()
 extern "C" void setup()
 {
 	USB_DEVICE_Init();
-	MapFlash();
 
-	uint8_t a = *(uint8_t*)0x90000000U;
+	if (f_mount(&SDFatFS, (TCHAR*)SDPath, 1) == FR_OK)
+	{
+
+	}
+
+	TCHAR* tt;
+	for (tt = (TCHAR*)SDPath; (UINT)*tt >= (_USE_LFN ? ' ' : '!') && *tt != ':'; tt++)
+	{
+		TCHAR a = *tt;
+	}
+
+	// Read ROMs from external flash
+	MapFlash();
+	if (f_mount(&USERFatFS, (TCHAR*)u"1:/", 1) == FR_OK)
+	{
+		/*
+		DIR dir;
+		FILINFO fno;
+		if (f_opendir(&dir, (const TCHAR*)"1:/") == FR_OK)
+		{
+			FRESULT a = f_readdir(&dir, &fno);
+			while (a == FR_OK)
+			{
+				a = f_readdir(&dir, &fno);
+			}
+		}
+*/
+		FIL file;
+		if (f_open(&file, (const TCHAR*)u"1:/BASIC10.ROM", FA_READ) == FR_OK)
+		{
+			UINT bytesRead = sizeof(basic);
+			f_read(&file, basic, bytesRead, &bytesRead);
+			//success = bytesRead == sizeof(basic);
+			f_close(&file);
+		}
+
+		f_mount(nullptr, nullptr, 1);
+	}
 
 	JPEG_ConfTypeDef config;
 	config.ImageWidth = UVC_WIDTH;
@@ -128,5 +166,5 @@ static void MapFlash()
 {
 	w25qxx_Init();
 	w25qxx_EnterQPI();
-	w25qxx_Startup(w25qxx_DTRMode); // w25qxx_DTRMode w25qxx_NormalMode
+	w25qxx_Startup(w25qxx_NormalMode); // w25qxx_DTRMode
 }

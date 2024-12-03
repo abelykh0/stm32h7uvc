@@ -18,8 +18,6 @@
 #include <emulator/bkInput.h>
 #include <emulator/bkScreen.h>
 #include "keyboard/ps2_keyboard.h"
-#include "flash_diskio.h"
-#include "ff.h"
 
 uint8_t RamBuffer[RAM_AVAILABLE];
 uint8_t basic[24448];
@@ -32,29 +30,11 @@ flag_t io_stop_happened;
 uint16_t port0177664;
 unsigned short last_branch;
 bk::bkScreen screen;
-static char SDPath[4];
 
 const int TICK_RATE = 3000000; /* CPU clock speed */
 
 void bk_setup()
 {
-	// read ROMs from SPI flash
-	FATFS_LinkDriver(&FlashDriver, SDPath);
-    FATFS FatFs;
-	if (f_mount(&FatFs, (const TCHAR*)u"", 1) == FR_OK)
-	  {
-		  FIL file;
-		  if (f_open(&file, (const TCHAR*)u"BASIC10.ROM", FA_READ) == FR_OK)
-		  {
-			  UINT bytesRead = sizeof(basic);
-			  f_read(&file, basic, bytesRead, &bytesRead);
-			  //success = bytesRead == sizeof(basic);
-			  f_close(&file);
-		  }
-
-		  f_mount(nullptr, nullptr, 1);
-	  }
-
 	bk_reset();
 }
 
