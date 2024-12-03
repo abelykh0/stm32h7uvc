@@ -4,6 +4,7 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_video_if.h"
+#include "quadspi.h"
 #include "w25qxx_qspi.h"
 
 #include "screen/screen.h"
@@ -20,6 +21,7 @@ static demo_mode demoMode = demo_mode::DEMO_COLORS;
 static bool demoInitialized = false;
 
 static void USB_DEVICE_Init();
+static void MapFlash();
 
 extern "C" void initialize()
 {
@@ -28,11 +30,7 @@ extern "C" void initialize()
 extern "C" void setup()
 {
 	USB_DEVICE_Init();
-
-
-
-
-	//HAL_QSPI_MemoryMapped()
+	MapFlash();
 
 	uint8_t a = *(uint8_t*)0x90000000U;
 
@@ -100,7 +98,7 @@ extern "C" void loop()
 	*/
 }
 
-void USB_DEVICE_Init()
+static void USB_DEVICE_Init()
 {
 	  if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK)
 	  {
@@ -126,3 +124,9 @@ void USB_DEVICE_Init()
 	  }
 }
 
+static void MapFlash()
+{
+	w25qxx_Init();
+	w25qxx_EnterQPI();
+	w25qxx_Startup(w25qxx_DTRMode); // w25qxx_DTRMode w25qxx_NormalMode
+}
