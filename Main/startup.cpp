@@ -1,12 +1,15 @@
+#include "startup.h"
+
 #include "stm32h7xx_hal.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_video_if.h"
+#include "w25qxx_qspi.h"
 
-#include "startup.h"
 #include "screen/screen.h"
 #include "keyboard/ps2_keyboard.h"
 #include "demo_colors/demo_colors.h"
+#include "emulator/bkEmu.h"
 #include "xonix/platform.h"
 
 extern JPEG_HandleTypeDef hjpeg;
@@ -26,6 +29,13 @@ extern "C" void setup()
 {
 	USB_DEVICE_Init();
 
+
+
+
+	//HAL_QSPI_MemoryMapped()
+
+	uint8_t a = *(uint8_t*)0x90000000U;
+
 	JPEG_ConfTypeDef config;
 	config.ImageWidth = UVC_WIDTH;
 	config.ImageHeight = UVC_HEIGHT;
@@ -35,10 +45,13 @@ extern "C" void setup()
 	HAL_JPEG_ConfigEncoding(&hjpeg, &config);
 
 	Ps2_Initialize();
+	bk_setup();
 }
 
 extern "C" void loop()
 {
+	bk_loop();
+	/*
 	int32_t key;
 	switch (demoMode)
 	{
@@ -84,6 +97,7 @@ extern "C" void loop()
 		}
 		break;
 	}
+	*/
 }
 
 void USB_DEVICE_Init()
