@@ -38,8 +38,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define SECTOR_SIZE 1024
-#define SIZE_IN_SECTORS 1024
+#define SECTOR_SIZE 512
+#define SIZE_IN_SECTORS 2048
 /* Private variables ---------------------------------------------------------*/
 /* Disk status */
 static volatile DSTATUS Stat = STA_NOINIT;
