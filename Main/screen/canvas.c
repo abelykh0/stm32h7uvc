@@ -85,9 +85,11 @@ void setVerticalOffset(uint8_t offset)
 
 Mcu* GetMcuPointer(uint16_t offset)
 {
+	//offset += verticalOffset * MCU_WIDTH;
+
 	if (offset > MCU_WIDTH * MCU_HEIGHT)
 	{
-		offset = 0;
+		offset -= MCU_WIDTH * MCU_HEIGHT;
 	}
 
 	if (offset < 24 * MCU_WIDTH)

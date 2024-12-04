@@ -349,6 +349,11 @@ void updateScreenMode(pdp_regs* p)
 	screen.setMode(mode);
 }
 
+void updateScreenOffset()
+{
+	screen.setOffset(port0177664 & 0xFF);
+}
+
 /*
  * Store a byte at the given address.
  */
@@ -372,9 +377,11 @@ extern "C" int sl_byte(pdp_regs* p, c_addr addr, d_byte byte)
 			break;
 		case TTY_REG + 4:
 			port0177664 = (port0177664 & 0xFF00) | byte;
+			updateScreenOffset();
 			break;
 		case TTY_REG + 5:
 			port0177664 = (port0177664 & 0xFF) | (byte >> 8);
+			updateScreenOffset();
 			break;
 		default:
 			break;
@@ -437,6 +444,7 @@ extern "C" int sl_word(pdp_regs* p, c_addr addr, d_word word)
 			break;
 		case TTY_REG + 4:
 			port0177664 = (word & 01377);
+			updateScreenOffset();
 			break;
 		default:
 			break;
@@ -449,8 +457,8 @@ extern "C" int sl_word(pdp_regs* p, c_addr addr, d_word word)
 	else if (addr >= (uint16_t)0x4000)
 	{
 		// Video RAM
-		screen.setVideoRam(addr, word >> 8);
-		screen.setVideoRam(addr + 1, word & 0xFF);
+		screen.setVideoRam(addr, word & 0xFF);
+		screen.setVideoRam(addr + 1, word >> 8);
 	}
 	else
 	{

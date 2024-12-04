@@ -12,13 +12,25 @@ using namespace std;
 // 84 - 256x256, no inversion, black and white
 // 85 - 256x256, inversion, black and white
 unordered_map<uint8_t, uint8_t> mode512x256 {
-	{16, 0},
-	{235, 1}
+	{16, 0x00 },
+	{235,0x01 }
+};
+
+unordered_map<uint8_t, uint8_t> mode256x256 {
+	{16, 0x00 },
+	{82, 0x01 },
+	{145,0x02 },
+	{41, 0x03 }
 };
 
 void bkScreen::setMode(uint8_t mode)
 {
 	this->mode = mode;
+}
+
+void bkScreen::setOffset(uint8_t offset)
+{
+	setVerticalOffset(offset);
 }
 
 uint8_t bkScreen::getVideoRam(uint16_t address)
@@ -34,18 +46,37 @@ uint8_t bkScreen::getVideoRam(uint16_t address)
 		for (uint16_t x = charX * 8; x < charX * 8 + 8; x++)
 		{
 			YCbCr pixel = GetPixel(x, y);
-			if (mode512x256[pixel.y])
-			{
-				result &= 1;
-			}
+			uint8_t pixelBit = mode512x256[pixel.y];
 
 			if ((this->mode & 0x01) != 0)
 			{
 				// inversion
-				result ^= 1;
+				pixelBit ^= 1;
 			}
 
-		    result <<= result;
+			result |= pixelBit;
+		    result <<= 1;
+		}
+	}
+	else
+	{
+		// 256x256 - 2 bit per pixel
+		uint16_t offset = address - 0x4000;
+		uint16_t charX = offset % 64;
+		uint16_t y = offset / 64;
+		for (uint16_t x = charX * 8; x < charX * 8 + 8; x += 2)
+		{
+			YCbCr pixel = GetPixel(x, y);
+			uint8_t pixelBits = mode256x256[pixel.y];
+
+			if ((this->mode & 0x01) != 0)
+			{
+				// inversion
+				pixelBits ^= 0x03;
+			}
+
+			result |= pixelBits;
+		    result <<= 2;
 		}
 	}
 
@@ -105,13 +136,13 @@ void bkScreen::setVideoRam(uint16_t address, uint8_t value)
 				color = 0x00;
 				break;
 			case 0x01:
-				color = 0x03;
+				color = 0x30;
 				break;
 			case 0x02:
 				color = 0x0C;
 				break;
 			case 0x03:
-				color = 0x30;
+				color = 0x03;
 				break;
 			}
 
