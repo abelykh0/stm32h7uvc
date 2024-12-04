@@ -12,15 +12,12 @@
 #include "screen/screen.h"
 #include "keyboard/ps2_keyboard.h"
 #include "emulator/bkEmu.h"
-//#include "demo_colors/demo_colors.h"
-//#include "xonix/platform.h"
 
 extern JPEG_HandleTypeDef hjpeg;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-static demo_mode demoMode = demo_mode::DEMO_COLORS;
-static bool demoInitialized = false;
+static Display::Screen screen;
 
 static void USB_DEVICE_Init();
 static void MapFlash();
@@ -33,39 +30,23 @@ extern "C" void setup()
 {
 	USB_DEVICE_Init();
 
-	if (f_mount(&SDFatFS, (TCHAR*)SDPath, 1) == FR_OK)
-	{
-
-	}
-
-	TCHAR* tt;
-	for (tt = (TCHAR*)SDPath; (UINT)*tt >= (_USE_LFN ? ' ' : '!') && *tt != ':'; tt++)
-	{
-		TCHAR a = *tt;
-	}
-
 	// Read ROMs from external flash
+	// (the built-in flash is only 128K)
 	MapFlash();
 	if (f_mount(&USERFatFS, (TCHAR*)u"1:/", 1) == FR_OK)
 	{
-		/*
-		DIR dir;
-		FILINFO fno;
-		if (f_opendir(&dir, (const TCHAR*)"1:/") == FR_OK)
-		{
-			FRESULT a = f_readdir(&dir, &fno);
-			while (a == FR_OK)
-			{
-				a = f_readdir(&dir, &fno);
-			}
-		}
-*/
 		FIL file;
 		if (f_open(&file, (const TCHAR*)u"1:/BASIC10.ROM", FA_READ) == FR_OK)
 		{
 			UINT bytesRead = sizeof(basic);
 			f_read(&file, basic, bytesRead, &bytesRead);
-			//success = bytesRead == sizeof(basic);
+			f_close(&file);
+		}
+
+		if (f_open(&file, (const TCHAR*)u"1:/MONIT10.ROM", FA_READ) == FR_OK)
+		{
+			UINT bytesRead = sizeof(monitor);
+			f_read(&file, monitor, bytesRead, &bytesRead);
 			f_close(&file);
 		}
 
@@ -80,6 +61,9 @@ extern "C" void setup()
 	config.ImageQuality = 90;
 	HAL_JPEG_ConfigEncoding(&hjpeg, &config);
 
+	screen.SetAttribute(0x2A10);
+	screen.Clear();
+
 	Ps2_Initialize();
 	bk_setup();
 }
@@ -87,53 +71,8 @@ extern "C" void setup()
 extern "C" void loop()
 {
 	bk_loop();
-	/*
-	int32_t key;
-	switch (demoMode)
-	{
-	case demo_mode::XONIX:
-		if (demoInitialized)
-		{
-			key = GameUpdate();
-		}
-		else
-		{
-			GameInit();
-			demoInitialized = true;
-		}
-		break;
-	case demo_mode::DEMO_COLORS:
-	default:
-		if (demoInitialized)
-		{
-			key = loop_demo_colors();
-		}
-		else
-		{
-			init_demo_colors();
-			demoInitialized = true;
-		}
-		break;
-	}
-
-	switch (key)
-	{
-	case KEY_F1:
-		if (demoMode != demo_mode::DEMO_COLORS)
-		{
-			demoMode = demo_mode::DEMO_COLORS;
-			demoInitialized = false;
-		}
-		break;
-	case KEY_F2:
-		if (demoMode != demo_mode::XONIX)
-		{
-			demoMode = demo_mode::XONIX;
-			demoInitialized = false;
-		}
-		break;
-	}
-	*/
+	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
+	HAL_Delay(50);
 }
 
 static void USB_DEVICE_Init()

@@ -2,12 +2,13 @@
 #include "usbd_video_conf.h"
 #include <string.h>
 
+uint8_t font8x8[2032];
+
 namespace Display
 {
 
 Screen::Screen()
 {
-	this->_isCursorVisible = false;
 }
 
 void Screen::Clear()
@@ -42,36 +43,8 @@ void Screen::SetCursorPosition(uint8_t x, uint8_t y)
 		y = TEXT_ROWS - 1;
 	}
 
-    if (this->_isCursorVisible)
-    {
-    	//this->InvertColor();
-    }
-
 	this->_cursor_x = x;
 	this->_cursor_y = y;
-
-    if (this->_isCursorVisible)
-    {
-    	//this->InvertColor();
-    }
-}
-
-void Screen::ShowCursor()
-{
-    if (!this->_isCursorVisible)
-    {
-    	this->_isCursorVisible = true;
-    	//this->InvertColor();
-    }
-}
-
-void Screen::HideCursor()
-{
-    if (this->_isCursorVisible)
-    {
-    	this->_isCursorVisible = false;
-    	//this->InvertColor();
-    }
 }
 
 void Screen::Print(const char* str)

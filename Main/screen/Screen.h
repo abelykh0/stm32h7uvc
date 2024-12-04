@@ -17,7 +17,6 @@ private:
 
 protected:
     virtual void DrawChar(const uint8_t *f, uint16_t x, uint16_t y, uint8_t c);
-    //virtual void InvertColor();
 
     uint16_t _hResolution;
     uint16_t _hResolutionNoBorder;
@@ -25,7 +24,6 @@ protected:
 	uint16_t _startLine;
     uint16_t _horizontalBorder;
     uint8_t _verticalBorder;
-    bool _isCursorVisible;
 
     uint8_t* _font = (uint8_t*)font8x8;
     uint16_t _attribute = 0x3F01; // white on blue
@@ -41,8 +39,6 @@ public:
 	void SetFont(const uint8_t* font);
 	void SetAttribute(uint16_t attribute);
 	void SetCursorPosition(uint8_t x, uint8_t y);
-	void ShowCursor();
-	void HideCursor();
 
 	void Print(const char* str);
 	void PrintAt(uint8_t x, uint8_t y, const char* str);
