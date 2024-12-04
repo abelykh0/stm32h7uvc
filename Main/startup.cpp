@@ -71,8 +71,8 @@ extern "C" void setup()
 extern "C" void loop()
 {
 	bk_loop();
-	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
-	HAL_Delay(50);
+	//HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
+	//HAL_Delay(50);
 }
 
 static void USB_DEVICE_Init()

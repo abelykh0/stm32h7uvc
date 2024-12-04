@@ -327,6 +327,28 @@ extern "C" int ll_word(pdp_regs* p, c_addr addr, d_word* word)
 	return OK;
 }
 
+void updateScreenMode(pdp_regs* p)
+{
+	d_word screenMode;
+	d_word inversion;
+	ll_word(p, 0x10, &screenMode);
+	ll_word(p, 0x12, &inversion);
+
+	uint8_t mode;
+	if (screenMode)
+	{
+		// 256x256
+		mode = 0x80;
+	}
+	else
+	{
+		// 512x256
+		mode = 0x00;
+	}
+
+	screen.setMode(mode);
+}
+
 /*
  * Store a byte at the given address.
  */
@@ -371,6 +393,12 @@ extern "C" int sl_byte(pdp_regs* p, c_addr addr, d_byte byte)
 	{
 		// RAM
 		RamBuffer[addr] = byte;
+
+		c_addr wordAddr = addr >> 1;
+		if (wordAddr == 0x08 || wordAddr == 0x09)
+		{
+			updateScreenMode(p);
+		}
 	}
 
 	return OK;
@@ -421,13 +449,19 @@ extern "C" int sl_word(pdp_regs* p, c_addr addr, d_word word)
 	else if (addr >= (uint16_t)0x4000)
 	{
 		// Video RAM
-		screen.setVideoRam(addr, word & 0xFF);
-		screen.setVideoRam(addr + 1, word >> 8);
+		screen.setVideoRam(addr, word >> 8);
+		screen.setVideoRam(addr + 1, word & 0xFF);
 	}
 	else
 	{
 		// RAM
-		((uint16_t*)RamBuffer)[addr >> 1] = word;
+		c_addr wordAddr = addr >> 1;
+		((uint16_t*)RamBuffer)[wordAddr] = word;
+
+		if (wordAddr == 0x08 || wordAddr == 0x09)
+		{
+			updateScreenMode(p);
+		}
 	}
 
 	return OK;
