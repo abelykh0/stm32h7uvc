@@ -39,7 +39,7 @@ extern "C" void setup()
 
 extern "C" void loop()
 {
-	int32_t key;
+	int32_t key = 0;
 	switch (demoMode)
 	{
 	case demo_mode::XONIX:
